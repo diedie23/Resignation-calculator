@@ -1,0 +1,1781 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>裸辞计划计算器</title>
+<style>
+  :root {
+    --bg: #f0f2f5;
+    --card: #ffffff;
+    --card2: #f7f8fa;
+    --text: #1a1a2e;
+    --text2: #5a5a7a;
+    --text3: #9e9eb8;
+    --border: #e8e8f0;
+    --accent: #6366f1;
+    --accent-light: #818cf8;
+    --accent-bg: rgba(99,102,241,0.08);
+    --accent-bg2: rgba(99,102,241,0.15);
+    --green: #10b981;
+    --green-light: #34d399;
+    --orange: #f59e0b;
+    --red: #ef4444;
+    --green-bg: #ecfdf5;
+    --orange-bg: #fffbeb;
+    --red-bg: #fef2f2;
+    --green-bd: #10b981;
+    --orange-bd: #f59e0b;
+    --red-bd: #ef4444;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.06);
+    --shadow-lg: 0 4px 24px rgba(0,0,0,0.08);
+    --gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%);
+    --gradient2: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  [data-theme="dark"] {
+    --bg: #0f0f1a;
+    --card: #1a1a2e;
+    --card2: #232340;
+    --text: #e8e8f0;
+    --text2: #a0a0c0;
+    --text3: #6a6a8a;
+    --border: #2a2a45;
+    --accent-bg: rgba(99,102,241,0.15);
+    --accent-bg2: rgba(99,102,241,0.25);
+    --green-bg: #052e16;
+    --orange-bg: #451a03;
+    --red-bg: #450a0a;
+    --shadow: 0 1px 3px rgba(0,0,0,0.2), 0 4px 12px rgba(0,0,0,0.3);
+    --shadow-lg: 0 4px 24px rgba(0,0,0,0.4);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html { font-size: 16px; scroll-behavior: smooth; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, "PingFang SC", "Helvetica Neue", "SF Pro Display", sans-serif;
+    line-height: 1.6; padding-bottom: env(safe-area-inset-bottom, 40px);
+    padding-bottom: calc(env(safe-area-inset-bottom) + 24px);
+    overflow-x: hidden; transition: background 0.3s, color 0.3s;
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--text3); border-radius: 3px; }
+
+  /* ── Header ── */
+  .header {
+    background: var(--gradient);
+    padding: 20px 16px 0; position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 4px 20px rgba(99,102,241,0.3);
+  }
+  .header-top { display: flex; align-items: center; justify-content: center; padding-bottom: 14px; position: relative; }
+  .header h1 { font-size: 18px; font-weight: 700; text-align: center; color: #fff; letter-spacing: 0.5px; }
+  .header-actions { position: absolute; right: 0; top: 50%; transform: translateY(-50%); display: flex; gap: 8px; }
+  .header-btn {
+    width: 34px; height: 34px; border-radius: 50%; border: none;
+    background: rgba(255,255,255,0.2); color: #fff; font-size: 16px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(10px); transition: var(--transition);
+  }
+  .header-btn:hover { background: rgba(255,255,255,0.35); transform: scale(1.1); }
+  .tabs { display: flex; gap: 4px; }
+  .tab {
+    flex: 1; padding: 12px 0; font-size: 14px; text-align: center;
+    border: none; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7);
+    border-radius: 12px 12px 0 0; cursor: pointer; font-weight: 500;
+    transition: var(--transition); backdrop-filter: blur(10px);
+  }
+  .tab.active { background: var(--bg); color: var(--accent); font-weight: 700; }
+  .tab:not(.active):hover { background: rgba(255,255,255,0.2); color: #fff; }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-20px);
+    background: var(--card); color: var(--text); padding: 10px 20px;
+    border-radius: 12px; font-size: 13px; font-weight: 500;
+    box-shadow: var(--shadow-lg); z-index: 1000; opacity: 0;
+    transition: all 0.3s ease; pointer-events: none;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+
+
+  /* ── Pages ── */
+  .page { display: none; padding: 0 0 24px; animation: pageIn 0.3s ease; }
+  .page.active { display: block; }
+  @keyframes pageIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  /* ── Section cards ── */
+  .section {
+    background: var(--card); margin: 14px 14px 0; border-radius: var(--radius);
+    overflow: hidden; box-shadow: var(--shadow); transition: var(--transition);
+  }
+  .section:hover { box-shadow: var(--shadow-lg); }
+  .section-title {
+    font-size: 12px; font-weight: 700; color: var(--accent);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    padding: 14px 16px 8px; display: flex; align-items: center; gap: 6px;
+  }
+
+  /* ── Input rows ── */
+  .field {
+    display: flex; align-items: center; flex-wrap: nowrap;
+    padding: 0 16px; min-height: 52px; border-top: 0.5px solid var(--border); gap: 10px;
+    transition: background 0.15s;
+  }
+  .field:first-of-type { border-top: none; }
+  .field:hover { background: var(--accent-bg); }
+  .field label {
+    font-size: 14px; color: var(--text); flex: 1; min-width: 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    padding: 12px 0; font-weight: 450;
+  }
+  .field-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .field input[type=number] {
+    width: 100px; text-align: right; border: 2px solid transparent;
+    background: var(--card2); border-radius: var(--radius-sm);
+    padding: 8px 12px; font-size: 15px; font-weight: 600;
+    color: var(--text); outline: none; -webkit-appearance: none;
+    min-height: 38px; transition: var(--transition);
+  }
+  .field input[type=number]:focus {
+    border-color: var(--accent); background: var(--accent-bg);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+  }
+  .field input[type=number]:hover:not(:focus) { border-color: var(--border); }
+  .field .unit { font-size: 12px; color: var(--text3); white-space: nowrap; font-weight: 500; }
+
+  /* ── Expense groups ── */
+  .group-wrap {
+    background: var(--card); margin: 14px 14px 0; border-radius: var(--radius);
+    overflow: hidden; box-shadow: var(--shadow); transition: var(--transition);
+  }
+  .group-wrap:hover { box-shadow: var(--shadow-lg); }
+  .group-head {
+    display: flex; align-items: center; padding: 14px 16px;
+    cursor: pointer; gap: 10px; border-top: 0.5px solid var(--border);
+    min-height: 52px; transition: background 0.15s; user-select: none;
+  }
+  .section-title + .group-head, .section-title + * .group-head:first-child { border-top: none; }
+  .group-head:first-of-type { border-top: none; }
+  .group-head:hover { background: var(--accent-bg); }
+  .group-head:active { background: var(--accent-bg2); }
+  .group-icon { font-size: 22px; width: 28px; text-align: center; flex-shrink: 0; }
+  .group-name { font-size: 15px; font-weight: 600; flex: 1; }
+  .group-sum {
+    font-size: 13px; color: var(--accent); flex-shrink: 0; font-weight: 600;
+    background: var(--accent-bg); padding: 3px 10px; border-radius: 20px;
+  }
+  .group-chev {
+    font-size: 12px; color: var(--text3); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    display: inline-block; flex-shrink: 0;
+  }
+  .group-chev.open { transform: rotate(180deg); }
+  .group-body {
+    background: var(--card2); overflow: hidden;
+    transition: max-height 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+  .group-body .field { background: var(--card2); padding-left: 54px; }
+  .group-body .field input[type=number] { background: var(--card); }
+
+  /* ── Debt rows ── */
+  .debt-card {
+    border-top: 0.5px solid var(--border); padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 10px;
+    transition: background 0.15s;
+  }
+  .debt-card:hover { background: rgba(99,102,241,0.03); }
+  .debt-card-row1 { display: flex; align-items: center; gap: 8px; }
+  .debt-card-row1 input.debt-name {
+    flex: 1; min-width: 0; border: 2px solid transparent; background: var(--card2);
+    border-radius: 8px; padding: 8px 12px; font-size: 14px; color: var(--text);
+    outline: none; transition: var(--transition); font-weight: 500;
+  }
+  .debt-card-row1 input.debt-name:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+  .debt-card-row1 input.debt-bal {
+    width: 100px; text-align: right; flex-shrink: 0; border: 2px solid transparent;
+    background: var(--card2); border-radius: 8px; padding: 8px 12px; font-size: 14px;
+    color: var(--text); outline: none; -webkit-appearance: none;
+    transition: var(--transition); font-weight: 600;
+  }
+  .debt-card-row1 input.debt-bal:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+  .debt-card-row1 .unit { font-size: 12px; color: var(--text3); flex-shrink: 0; }
+  .debt-card-row1 .del {
+    background: linear-gradient(135deg, #ef4444, #f87171); color: #fff;
+    border: none; border-radius: 50%; width: 28px; height: 28px;
+    font-size: 16px; cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    line-height: 1; transition: var(--transition); box-shadow: 0 2px 8px rgba(239,68,68,0.3);
+  }
+  .debt-card-row1 .del:hover { transform: scale(1.15); }
+  .debt-card-row2 { display: flex; align-items: center; gap: 0; }
+  .repay-btn {
+    flex: 1; padding: 8px 0; font-size: 13px; text-align: center;
+    border: 1.5px solid var(--border); background: var(--card2);
+    color: var(--text2); cursor: pointer; font-weight: 500;
+    transition: var(--transition);
+  }
+  .repay-btn:first-child { border-radius: 8px 0 0 8px; }
+  .repay-btn:last-child  { border-radius: 0 8px 8px 0; border-left: none; }
+  .repay-btn.active {
+    background: var(--gradient); color: #fff;
+    border-color: var(--accent); font-weight: 700;
+    box-shadow: 0 2px 8px rgba(99,102,241,0.3);
+  }
+  .debt-monthly-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 0 2px; animation: fadeIn 0.2s ease;
+  }
+  .debt-monthly-row label { font-size: 13px; color: var(--text2); flex: 1; }
+  .debt-monthly-row input {
+    width: 100px; text-align: right; border: 2px solid transparent;
+    background: var(--card2); border-radius: 8px; padding: 8px 12px;
+    font-size: 14px; color: var(--text); outline: none;
+    -webkit-appearance: none; flex-shrink: 0; transition: var(--transition); font-weight: 600;
+  }
+  .debt-monthly-row input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+  .debt-monthly-row .unit { font-size: 12px; color: var(--text3); flex-shrink: 0; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
+  .add-debt {
+    display: flex; align-items: center; gap: 8px; padding: 14px 16px;
+    font-size: 14px; color: var(--accent); cursor: pointer;
+    border-top: 0.5px solid var(--border); background: none;
+    border-left: none; border-right: none; border-bottom: none;
+    width: 100%; text-align: left; font-weight: 600;
+    transition: background 0.15s;
+  }
+  .add-debt:hover { background: var(--accent-bg); }
+
+  /* ── Total row ── */
+  .total-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 16px; border-top: 0.5px solid var(--border);
+    background: var(--accent-bg);
+  }
+  .total-row .tl { font-size: 14px; color: var(--text2); font-weight: 500; }
+  .total-row .tv { font-size: 17px; font-weight: 800; color: var(--accent); }
+
+  /* ── Calc button ── */
+  .calc-btn {
+    display: block; margin: 18px 14px 0; width: calc(100% - 28px);
+    padding: 16px; background: var(--gradient); color: #fff; border: none;
+    border-radius: var(--radius); font-size: 16px; font-weight: 700;
+    cursor: pointer; letter-spacing: 0.04em;
+    box-shadow: 0 4px 16px rgba(99,102,241,0.35);
+    transition: var(--transition); position: relative; overflow: hidden;
+  }
+  .calc-btn::after {
+    content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+  }
+  .calc-btn:hover::after { left: 100%; }
+  .calc-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(99,102,241,0.45); }
+  .calc-btn:active { transform: scale(0.98) translateY(0); }
+
+  /* ── Result area ── */
+  .result { margin: 14px 14px 0; display: none; animation: resultIn 0.5s ease; }
+  @keyframes resultIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+  .verdict-card {
+    border-radius: var(--radius); padding: 20px; margin-bottom: 12px;
+    border: 2px solid; box-shadow: var(--shadow);
+  }
+  .verdict-card .vi { font-size: 32px; margin-bottom: 8px; }
+  .verdict-card .vt { font-size: 18px; font-weight: 800; margin-bottom: 6px; line-height: 1.4; }
+  .verdict-card .vd { font-size: 14px; line-height: 1.7; color: var(--text2); }
+
+  /* ── Metrics grid ── */
+  .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .metric {
+    background: var(--card); border-radius: var(--radius-sm);
+    padding: 14px; box-shadow: var(--shadow); transition: var(--transition);
+    border: 1px solid var(--border);
+  }
+  .metric:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+  .metric .ml { font-size: 11px; color: var(--text3); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+  .metric .mv { font-size: 18px; font-weight: 800; line-height: 1.2; word-break: break-all; }
+  .metric .ms { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+  /* ── Breakdown ── */
+  .breakdown-card {
+    background: var(--card); border-radius: var(--radius); padding: 16px;
+    margin-bottom: 12px; box-shadow: var(--shadow);
+  }
+  .breakdown-card .bc-title { font-size: 13px; font-weight: 700; color: var(--text2); margin-bottom: 14px; }
+  .bd-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .bd-row:last-child { margin-bottom: 0; }
+  .bd-icon { width: 24px; text-align: center; font-size: 18px; flex-shrink: 0; }
+  .bd-label { font-size: 13px; color: var(--text2); flex: 1; min-width: 0; font-weight: 500; }
+  .bd-bar-bg { width: 60px; height: 6px; border-radius: 3px; background: var(--border); overflow: hidden; flex-shrink: 0; }
+  .bd-bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+  .bd-val { font-size: 13px; font-weight: 700; min-width: 72px; text-align: right; }
+  .bd-pct { font-size: 11px; color: var(--text3); margin-left: 2px; font-weight: 500; }
+
+  /* ── Donut chart ── */
+  .chart-container { display: flex; justify-content: center; margin: 10px 0 16px; }
+
+  /* ── Timeline ── */
+  .timeline-card {
+    background: var(--card); border-radius: var(--radius); padding: 16px;
+    margin-bottom: 12px; box-shadow: var(--shadow);
+  }
+  .timeline-card .tc-title { font-size: 13px; font-weight: 700; color: var(--text2); margin-bottom: 14px; }
+  .tl-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .tl-row:last-child { margin-bottom: 0; }
+  .tl-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+  .tl-label { font-size: 14px; color: var(--text2); flex: 1; font-weight: 500; }
+  .tl-val { font-size: 14px; font-weight: 700; text-align: right; }
+
+  /* ── Progress ── */
+  .progress-card {
+    background: var(--card); border-radius: var(--radius); padding: 16px;
+    margin-bottom: 12px; box-shadow: var(--shadow);
+  }
+  .progress-card .pc-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--text2); margin-bottom: 10px; font-weight: 500; }
+  .prog-bg { height: 12px; border-radius: 6px; background: var(--border); overflow: hidden; }
+  .prog-fill { height: 100%; border-radius: 6px; transition: width 0.6s ease; background: var(--gradient); }
+
+  /* ── Tips ── */
+  .tips-card {
+    background: var(--card); border-radius: var(--radius); padding: 16px;
+    margin-bottom: 12px; box-shadow: var(--shadow);
+  }
+  .tips-card .tc-title { font-size: 13px; font-weight: 700; color: var(--text2); margin-bottom: 12px; }
+  .tip-item { display: flex; gap: 10px; font-size: 14px; color: var(--text2); line-height: 1.7; margin-bottom: 12px; }
+  .tip-item:last-child { margin-bottom: 0; }
+  .tip-arrow { color: var(--accent); flex-shrink: 0; font-weight: 700; margin-top: 2px; }
+
+  /* ── Progress tracker ── */
+  .tracker-hint {
+    font-size: 12px; color: var(--text3); padding: 4px 16px 10px; line-height: 1.5;
+  }
+  .tracker-cell {
+    display: flex; align-items: center; padding: 10px 16px;
+    border-top: 0.5px solid var(--border); gap: 8px; background: var(--card2);
+  }
+  .tracker-cell .tc-month {
+    font-size: 13px; color: var(--text2); width: 36px; flex-shrink: 0; font-weight: 600;
+  }
+  .tracker-cell input {
+    flex: 1; min-width: 0; text-align: right; border: 2px solid transparent;
+    background: var(--card); border-radius: 8px; padding: 8px 12px;
+    font-size: 14px; color: var(--text); outline: none;
+    -webkit-appearance: none; transition: var(--transition); font-weight: 600;
+  }
+  .tracker-cell input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+  .tracker-cell .unit { font-size: 12px; color: var(--text3); flex-shrink: 0; }
+  .tracker-summary {
+    padding: 16px; border-top: 0.5px solid var(--border); background: var(--card2);
+  }
+  .tsrow { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .tsl { font-size: 13px; color: var(--text2); font-weight: 500; }
+  .tsv { font-size: 15px; font-weight: 700; color: var(--text); }
+  .ts-divider { border-top: 1px solid var(--border); margin: 12px 0; }
+
+  /* ── One-time expenses ── */
+  .onetime-hint {
+    font-size: 12px; color: var(--text3); padding: 6px 16px 8px; line-height: 1.5;
+  }
+  .onetime-item {
+    display: flex; align-items: center; padding: 10px 16px;
+    border-top: 0.5px solid var(--border); gap: 8px;
+    transition: background 0.15s;
+  }
+  .onetime-item:hover { background: rgba(99,102,241,0.03); }
+  .onetime-item input.ot-name {
+    flex: 1; min-width: 0; border: 2px solid transparent; background: var(--card2);
+    border-radius: 8px; padding: 8px 12px; font-size: 14px; color: var(--text);
+    outline: none; transition: var(--transition); font-weight: 500;
+  }
+  .onetime-item input.ot-name:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+  .onetime-item input.ot-amt {
+    width: 96px; text-align: right; border: 2px solid transparent; background: var(--card2);
+    border-radius: 8px; padding: 8px 12px; font-size: 14px; color: var(--text);
+    outline: none; -webkit-appearance: none; flex-shrink: 0;
+    transition: var(--transition); font-weight: 600;
+  }
+  .onetime-item input.ot-amt:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+  .onetime-item .unit { font-size: 12px; color: var(--text3); flex-shrink: 0; }
+  .onetime-item .del {
+    background: linear-gradient(135deg, #ef4444, #f87171); color: #fff;
+    border: none; border-radius: 50%; width: 28px; height: 28px;
+    font-size: 16px; cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    line-height: 1; transition: var(--transition); box-shadow: 0 2px 8px rgba(239,68,68,0.3);
+  }
+  .onetime-item .del:hover { transform: scale(1.15); }
+
+  /* ── Income extra rows ── */
+  .extra-hint {
+    font-size: 12px; color: var(--text3); padding: 8px 16px 4px; line-height: 1.5;
+  }
+  .extra-cell {
+    display: flex; align-items: center; padding: 10px 16px 10px 54px;
+    border-top: 0.5px solid var(--border); gap: 8px; background: var(--card2);
+  }
+  .extra-cell .ec-month {
+    font-size: 13px; color: var(--text2); width: 36px; flex-shrink: 0; font-weight: 600;
+  }
+  .extra-cell input {
+    flex: 1; min-width: 0; text-align: right; border: 2px solid transparent;
+    background: var(--card); border-radius: 8px; padding: 8px 12px;
+    font-size: 14px; color: var(--text); outline: none;
+    -webkit-appearance: none; transition: var(--transition); font-weight: 600;
+  }
+  .extra-cell input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+  .extra-cell .unit { font-size: 12px; color: var(--text3); flex-shrink: 0; }
+
+  /* ── Income summary bar ── */
+  .income-summary {
+    padding: 12px 16px; border-top: 0.5px solid var(--border);
+    background: var(--accent-bg); display: flex; flex-direction: column; gap: 6px;
+  }
+  .is-row { display: flex; justify-content: space-between; align-items: center; }
+  .is-label { font-size: 13px; color: var(--text2); font-weight: 500; }
+  .is-val { font-size: 16px; font-weight: 800; color: var(--text); }
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+  /* ── Current month tag ── */
+  .month-tag {
+    font-size: 11px; color: #92400e; background: #fef3c7;
+    border-radius: 6px; padding: 2px 8px; flex-shrink: 0; font-weight: 600;
+  }
+  [data-theme="dark"] .month-tag { color: #fbbf24; background: #451a03; }
+
+  /* ── Reset modal ── */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5); z-index: 200; display: none;
+    align-items: center; justify-content: center;
+    backdrop-filter: blur(4px); animation: fadeIn 0.2s;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal-box {
+    background: var(--card); border-radius: var(--radius); padding: 24px;
+    max-width: 320px; width: 90%; box-shadow: var(--shadow-lg);
+    text-align: center; animation: scaleIn 0.25s ease;
+  }
+  @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .modal-box h3 { font-size: 16px; margin-bottom: 8px; }
+  .modal-box p { font-size: 14px; color: var(--text2); margin-bottom: 20px; line-height: 1.6; }
+  .modal-btns { display: flex; gap: 10px; }
+  .modal-btns button {
+    flex: 1; padding: 10px; border-radius: 10px; font-size: 14px;
+    font-weight: 600; cursor: pointer; border: none; transition: var(--transition);
+  }
+  .modal-cancel { background: var(--card2); color: var(--text2); }
+  .modal-confirm { background: var(--red); color: #fff; box-shadow: 0 2px 8px rgba(239,68,68,0.3); }
+  .modal-confirm:hover { transform: translateY(-1px); }
+
+  /* ── Burn-down chart ── */
+  .burndown-card {
+    background: var(--card); border-radius: var(--radius); padding: 16px;
+    margin-bottom: 12px; box-shadow: var(--shadow);
+  }
+  .burndown-card .bc-title { font-size: 13px; font-weight: 700; color: var(--text2); margin-bottom: 12px; }
+  .burndown-card canvas { width: 100%; height: 180px; }
+</style>
+</head>
+<body>
+
+<!-- Toast notification -->
+<div class="toast" id="toast"></div>
+
+
+
+<!-- Reset modal -->
+<div class="modal-overlay" id="reset-modal">
+  <div class="modal-box">
+    <h3>⚠️ 确认重置</h3>
+    <p>将清除所有已填写的数据和本地存储，恢复为默认值。此操作不可撤销。</p>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeResetModal()">取消</button>
+      <button class="modal-confirm" onclick="confirmReset()">确认重置</button>
+    </div>
+  </div>
+</div>
+
+<div class="header">
+  <div class="header-top">
+    <h1>💼 裸辞计划计算器</h1>
+    <div class="header-actions">
+      <button class="header-btn" onclick="toggleTheme()" title="切换主题" id="theme-btn">🌙</button>
+      <button class="header-btn" onclick="showResetModal()" title="重置数据">🔄</button>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab(0)">📅 离职时机规划</button>
+    <button class="tab" onclick="switchTab(1)">🧮 裸辞后续航</button>
+  </div>
+</div>
+
+<!-- ===== PAGE 0: Resignation timing planner ===== -->
+<div class="page active" id="page0">
+
+  <div class="section" id="income-section">
+    <div class="section-title">💼 在职收入</div>
+
+    <div class="field"><label>税后基础月薪</label><div class="field-right"><input type="number" id="salary" value="15000" min="0" oninput="updateIncome()"><span class="unit">元/月</span></div></div>
+
+    <div class="group-head" onclick="toggleExtra(this)" id="extra-toggle" style="border-top:0.5px solid var(--border)">
+      <span class="group-icon">➕</span>
+      <span class="group-name" style="font-size:14px">未来各月额外收入</span>
+      <span class="group-sum" id="extra-sum-label" style="font-size:12px;color:var(--text3);background:none;padding:0">点击展开</span>
+      <span class="group-chev open">▾</span>
+    </div>
+    <div id="extra-body" class="group-body">
+      <div class="extra-hint">仅填写有额外收入的月份（奖金、提成、年终等）</div>
+      <div id="extra-grid"></div>
+    </div>
+
+    <div class="income-summary" id="income-summary">
+      <div class="is-row"><span class="is-label">月均收入（剩余月份）</span><span class="is-val" id="is-avg">¥15,000</span></div>
+      <div class="is-row"><span class="is-label">预计月净结余</span><span class="is-val" id="is-save" style="color:var(--green)">-</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">💰 当前资产</div>
+    <div class="field"><label>存款 / 现金</label><div class="field-right"><input type="number" id="savings" value="80000" min="0"><span class="unit">元</span></div></div>
+    <div class="field"><label>可变现投资（按8折）</label><div class="field-right"><input type="number" id="invest" value="0" min="0"><span class="unit">元</span></div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">💳 负债</div>
+    <div id="debts"></div>
+    <button class="add-debt" onclick="addDbt()" id="add-debt-btn">＋ 添加负债（花呗 / 信用卡 / 贷款）</button>
+    <div class="total-row" id="debt-total-row" style="display:none">
+      <span class="tl">负债合计</span>
+      <span class="tv" id="debt-total-summary">¥0</span>
+    </div>
+  </div>
+
+  <!-- Expense groups -->
+  <div class="group-wrap" id="grp-wrap">
+    <div class="section-title" style="border-bottom:0.5px solid var(--border)">📤 在职月支出</div>
+
+    <div class="group-head" onclick="toggleGrp(this,'gi-housing')">
+      <span class="group-icon">🏠</span><span class="group-name">住房</span>
+      <span class="group-sum" id="gs-housing">¥0</span><span class="group-chev open">▾</span>
+    </div>
+    <div class="group-body" id="gi-housing">
+      <div class="field"><label>房租 / 房贷</label><div class="field-right"><input type="number" class="exp housing" value="3000" min="0"><span class="unit">元/月</span></div></div>
+      <div class="field"><label>水电气 / 物业 / 宽带</label><div class="field-right"><input type="number" class="exp housing" value="300" min="0"><span class="unit">元/月</span></div></div>
+    </div>
+
+    <div class="group-head" onclick="toggleGrp(this,'gi-food')">
+      <span class="group-icon">🍜</span><span class="group-name">饮食</span>
+      <span class="group-sum" id="gs-food">¥0</span><span class="group-chev open">▾</span>
+    </div>
+    <div class="group-body" id="gi-food">
+      <div class="field"><label>外卖 / 堂食</label><div class="field-right"><input type="number" class="exp food" value="1500" min="0"><span class="unit">元/月</span></div></div>
+      <div class="field"><label>买菜 / 超市</label><div class="field-right"><input type="number" class="exp food" value="500" min="0"><span class="unit">元/月</span></div></div>
+      <div class="field"><label>咖啡 / 奶茶</label><div class="field-right"><input type="number" class="exp food" value="300" min="0"><span class="unit">元/月</span></div></div>
+    </div>
+
+    <div class="group-head" onclick="toggleGrp(this,'gi-transport')">
+      <span class="group-icon">🚇</span><span class="group-name">交通</span>
+      <span class="group-sum" id="gs-transport">¥0</span><span class="group-chev open">▾</span>
+    </div>
+    <div class="group-body" id="gi-transport">
+      <div class="field"><label>地铁 / 公交</label><div class="field-right"><input type="number" class="exp transport" value="200" min="0"><span class="unit">元/月</span></div></div>
+      <div class="field"><label>打车 / 网约车</label><div class="field-right"><input type="number" class="exp transport" value="200" min="0"><span class="unit">元/月</span></div></div>
+      <div class="field"><label>车贷 / 油费 / 停车</label><div class="field-right"><input type="number" class="exp transport" value="0" min="0"><span class="unit">元/月</span></div></div>
+    </div>
+
+    <div class="group-head" onclick="toggleGrp(this,'gi-ent')">
+      <span class="group-icon">🎮</span><span class="group-name">娱乐 &amp; 社交</span>
+      <span class="group-sum" id="gs-ent">¥0</span><span class="group-chev open">▾</span>
+    </div>
+    <div class="group-body" id="gi-ent">
+      <div class="field"><label>影视 / 游戏会员</label><div class="field-right"><input type="number" class="exp ent" value="100" min="0"><span class="unit">元/月</span></div></div>
+      <div class="field"><label>聚餐 / 朋友局</label><div class="field-right"><input type="number" class="exp ent" value="500" min="0"><span class="unit">元/月</span></div></div>
+      <div class="field"><label>旅行（月均）</label><div class="field-right"><input type="number" class="exp ent" value="300" min="0"><span class="unit">元/月</span></div></div>
+      <div class="field"><label>购物 / 衣物</label><div class="field-right"><input type="number" class="exp ent" value="500" min="0"><span class="unit">元/月</span></div></div>
+    </div>
+
+    <div class="group-head" onclick="toggleGrp(this,'gi-health')">
+      <span class="group-icon">💊</span><span class="group-name">健康 &amp; 成长</span>
+      <span class="group-sum" id="gs-health">¥0</span><span class="group-chev open">▾</span>
+    </div>
+    <div class="group-body" id="gi-health">
+      <div class="field"><label>健身 / 运动</label><div class="field-right"><input type="number" class="exp health" value="200" min="0"><span class="unit">元/月</span></div></div>
+      <div class="field"><label>医疗 / 药品</label><div class="field-right"><input type="number" class="exp health" value="100" min="0"><span class="unit">元/月</span></div></div>
+      <div class="field"><label>学习 / 课程</label><div class="field-right"><input type="number" class="exp health" value="0" min="0"><span class="unit">元/月</span></div></div>
+    </div>
+
+    <div class="group-head" onclick="toggleGrp(this,'gi-other')">
+      <span class="group-icon">📦</span><span class="group-name">其他</span>
+      <span class="group-sum" id="gs-other">¥0</span><span class="group-chev open">▾</span>
+    </div>
+    <div class="group-body" id="gi-other">
+      <div class="field"><label>手机话费</label><div class="field-right"><input type="number" class="exp other" value="100" min="0"><span class="unit">元/月</span></div></div>
+      <div class="field"><label>人情 / 礼金</label><div class="field-right"><input type="number" class="exp other" value="200" min="0"><span class="unit">元/月</span></div></div>
+      <div class="field"><label>其他杂费</label><div class="field-right"><input type="number" class="exp other" value="100" min="0"><span class="unit">元/月</span></div></div>
+    </div>
+
+    <div class="total-row">
+      <span class="tl">在职月支出合计</span>
+      <span class="tv" id="total-exp0">¥0</span>
+    </div>
+  </div>
+
+  <!-- One-time expenses -->
+  <div class="section" id="onetime-section">
+    <div class="section-title">💸 一次性支出（在职或离职前）</div>
+    <div class="onetime-hint">驾照、课程、旅行、装修等，直接从可用资金扣除</div>
+    <div id="onetime-list"></div>
+    <button class="add-debt" onclick="addOnetime()" style="border-top:0.5px solid var(--border)">＋ 添加一次性支出</button>
+    <div class="total-row" id="onetime-total-row" style="display:none">
+      <span class="tl">一次性支出合计</span>
+      <span class="tv" id="onetime-total">¥0</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🎯 离职目标</div>
+    <div class="field"><label>离职后预计月支出</label><div class="field-right"><input type="number" id="quit_monthly" value="5000" min="0"><span class="unit">元/月</span></div></div>
+    <div class="field"><label>希望空窗多久</label><div class="field-right"><input type="number" id="quit_months" value="6" min="1"><span class="unit">个月</span></div></div>
+    <div class="field"><label>应急储备底线</label><div class="field-right"><input type="number" id="emergency" value="20000" min="0"><span class="unit">元</span></div></div>
+    <div class="field"><label>离职补偿预估（N+1）</label><div class="field-right"><input type="number" id="nplus1" value="0" min="0"><span class="unit">元</span></div></div>
+  </div>
+
+  <!-- Savings tracker -->
+  <div class="section" id="savings-tracker">
+    <div class="section-title" style="padding-bottom:4px">📈 离职进度追踪</div>
+    <div class="tracker-hint" style="padding-top:0">存款和负债与上方同步，每月记录新增存款即可</div>
+
+    <div class="field" style="opacity:0.7">
+      <label>初始存款（同步自上方）</label>
+      <div class="field-right">
+        <span id="ts-sync-savings" style="font-size:15px;font-weight:700;color:var(--text)">¥0</span>
+        <span class="unit">元</span>
+      </div>
+    </div>
+    <div class="field" style="opacity:0.7;border-top:0.5px solid var(--border)">
+      <label>负债余额（同步自上方）</label>
+      <div class="field-right">
+        <span id="ts-sync-debt" style="font-size:15px;font-weight:700;color:var(--red)">¥0</span>
+        <span class="unit">元</span>
+      </div>
+    </div>
+
+    <div class="group-head" onclick="toggleTracker(this)" style="border-top:0.5px solid var(--border)">
+      <span class="group-icon">🗓️</span>
+      <span class="group-name" style="font-size:14px">每月新增存款</span>
+      <span class="group-sum" id="tracker-extra-label" style="font-size:12px;color:var(--text3);background:none;padding:0">点击展开</span>
+      <span class="group-chev open">▾</span>
+    </div>
+    <div id="tracker-body" class="group-body">
+      <div class="onetime-hint">每月发工资后填入本月实际新增的存款金额</div>
+      <div id="tracker-grid"></div>
+    </div>
+
+    <div class="tracker-summary">
+      <div class="tsrow">
+        <span class="tsl">初始存款 - 负债</span>
+        <span class="tsv" id="ts-net" style="color:var(--text)">¥0</span>
+      </div>
+      <div class="tsrow">
+        <span class="tsl">各月新增合计</span>
+        <span class="tsv" id="ts-extra" style="color:var(--green)">¥0</span>
+      </div>
+      <div class="tsrow">
+        <span class="tsl">当前累计净资产</span>
+        <span class="tsv" id="ts-total-net" style="color:var(--accent);font-size:17px">¥0</span>
+      </div>
+      <div class="ts-divider"></div>
+      <div class="tsrow">
+        <span class="tsl">离职目标</span>
+        <span class="tsv" id="ts-target" style="color:var(--text2)">先点击计算</span>
+      </div>
+      <div class="tsrow">
+        <span class="tsl" style="font-weight:700;color:var(--text)">距目标还差</span>
+        <span class="tsv" id="ts-gap" style="font-size:18px;font-weight:800">-</span>
+      </div>
+      <div style="margin-top:14px">
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text2);margin-bottom:8px">
+          <span>离职目标达成进度</span><span id="ts-pct" style="font-weight:800;color:var(--text)">0%</span>
+        </div>
+        <div class="prog-bg" style="height:14px;border-radius:7px">
+          <div class="prog-fill" id="ts-bar" style="width:0%;height:100%;border-radius:7px;background:var(--gradient);transition:width 0.6s ease"></div>
+        </div>
+        <div id="ts-cheer" style="font-size:13px;color:var(--text2);text-align:center;margin-top:10px;min-height:20px"></div>
+      </div>
+    </div>
+  </div>
+
+  <button class="calc-btn" onclick="calcPlan()">✨ 计算最佳离职时机</button>
+
+  <div class="result" id="res0">
+    <div id="v0" class="verdict-card"></div>
+    <div class="metrics" id="cards0"></div>
+    <div class="breakdown-card" id="bd0"></div>
+    <div class="burndown-card" id="burndown0" style="display:none">
+      <div class="bc-title">📉 资金消耗预测</div>
+      <canvas id="burndown-canvas0" height="180"></canvas>
+    </div>
+    <div class="timeline-card" id="tl0" style="display:none"></div>
+    <div class="progress-card" id="prog0" style="display:none"></div>
+    <div class="tips-card" id="tips0"></div>
+  </div>
+</div>
+
+<!-- ===== PAGE 1: Post-resignation survival ===== -->
+<div class="page" id="page1">
+
+  <div class="section">
+    <div class="section-title">💰 离职时资产</div>
+    <div class="field"><label>存款 / 现金</label><div class="field-right"><input type="number" id="s2" value="100000" min="0"><span class="unit">元</span></div></div>
+    <div class="field"><label>可变现资产</label><div class="field-right"><input type="number" id="a2" value="0" min="0"><span class="unit">元</span></div></div>
+    <div class="field"><label>离职补偿金</label><div class="field-right"><input type="number" id="c2" value="0" min="0"><span class="unit">元</span></div></div>
+    <div class="field"><label>剩余负债总额</label><div class="field-right"><input type="number" id="d2" value="0" min="0"><span class="unit">元</span></div></div>
+  </div>
+
+  <div class="group-wrap">
+    <div class="section-title" style="border-bottom:0.5px solid var(--border)">📤 离职后月支出</div>
+
+    <div class="group-head" onclick="toggleGrp(this,'gi2-h')">
+      <span class="group-icon">🏠</span><span class="group-name">住房</span>
+      <span class="group-sum" id="gs2-h">¥0</span><span class="group-chev open">▾</span>
+    </div>
+    <div class="group-body" id="gi2-h">
+      <div class="field"><label>房租 / 房贷</label><div class="field-right"><input type="number" class="exp2 h" value="3000" min="0"><span class="unit">元/月</span></div></div>
+      <div class="field"><label>水电气 / 物业 / 宽带</label><div class="field-right"><input type="number" class="exp2 h" value="300" min="0"><span class="unit">元/月</span></div></div>
+    </div>
+
+    <div class="group-head" onclick="toggleGrp(this,'gi2-f')">
+      <span class="group-icon">🍜</span><span class="group-name">饮食</span>
+      <span class="group-sum" id="gs2-f">¥0</span><span class="group-chev open">▾</span>
+    </div>
+    <div class="group-body" id="gi2-f">
+      <div class="field"><label>外卖 / 堂食</label><div class="field-right"><input type="number" class="exp2 f" value="1200" min="0"><span class="unit">元/月</span></div></div>
+      <div class="field"><label>买菜 / 超市</label><div class="field-right"><input type="number" class="exp2 f" value="600" min="0"><span class="unit">元/月</span></div></div>
+      <div class="field"><label>咖啡 / 奶茶</label><div class="field-right"><input type="number" class="exp2 f" value="200" min="0"><span class="unit">元/月</span></div></div>
+    </div>
+
+    <div class="group-head" onclick="toggleGrp(this,'gi2-t')">
+      <span class="group-icon">🚇</span><span class="group-name">交通</span>
+      <span class="group-sum" id="gs2-t">¥0</span><span class="group-chev open">▾</span>
+    </div>
+    <div class="group-body" id="gi2-t">
+      <div class="field"><label>地铁 / 公交</label><div class="field-right"><input type="number" class="exp2 t" value="100" min="0"><span class="unit">元/月</span></div></div>
+      <div class="field"><label>打车</label><div class="field-right"><input type="number" class="exp2 t" value="100" min="0"><span class="unit">元/月</span></div></div>
+      <div class="field"><label>车贷 / 油费 / 停车</label><div class="field-right"><input type="number" class="exp2 t" value="0" min="0"><span class="unit">元/月</span></div></div>
+    </div>
+
+    <div class="group-head" onclick="toggleGrp(this,'gi2-e')">
+      <span class="group-icon">🎮</span><span class="group-name">娱乐 &amp; 社交</span>
+      <span class="group-sum" id="gs2-e">¥0</span><span class="group-chev open">▾</span>
+    </div>
+    <div class="group-body" id="gi2-e">
+      <div class="field"><label>影视 / 游戏会员</label><div class="field-right"><input type="number" class="exp2 e" value="100" min="0"><span class="unit">元/月</span></div></div>
+      <div class="field"><label>聚餐 / 朋友局</label><div class="field-right"><input type="number" class="exp2 e" value="300" min="0"><span class="unit">元/月</span></div></div>
+      <div class="field"><label>旅行（月均）</label><div class="field-right"><input type="number" class="exp2 e" value="500" min="0"><span class="unit">元/月</span></div></div>
+      <div class="field"><label>购物 / 衣物</label><div class="field-right"><input type="number" class="exp2 e" value="300" min="0"><span class="unit">元/月</span></div></div>
+    </div>
+
+    <div class="group-head" onclick="toggleGrp(this,'gi2-he')">
+      <span class="group-icon">💊</span><span class="group-name">健康 &amp; 成长</span>
+      <span class="group-sum" id="gs2-he">¥0</span><span class="group-chev open">▾</span>
+    </div>
+    <div class="group-body" id="gi2-he">
+      <div class="field"><label>健身 / 运动</label><div class="field-right"><input type="number" class="exp2 he" value="200" min="0"><span class="unit">元/月</span></div></div>
+      <div class="field"><label>医疗 / 药品</label><div class="field-right"><input type="number" class="exp2 he" value="100" min="0"><span class="unit">元/月</span></div></div>
+      <div class="field"><label>学习 / 课程</label><div class="field-right"><input type="number" class="exp2 he" value="200" min="0"><span class="unit">元/月</span></div></div>
+    </div>
+
+    <div class="group-head" onclick="toggleGrp(this,'gi2-o')">
+      <span class="group-icon">📦</span><span class="group-name">其他</span>
+      <span class="group-sum" id="gs2-o">¥0</span><span class="group-chev open">▾</span>
+    </div>
+    <div class="group-body" id="gi2-o">
+      <div class="field"><label>社保（灵活就业）</label><div class="field-right"><input type="number" class="exp2 o" value="1200" min="0"><span class="unit">元/月</span></div></div>
+      <div class="field"><label>手机话费</label><div class="field-right"><input type="number" class="exp2 o" value="100" min="0"><span class="unit">元/月</span></div></div>
+      <div class="field"><label>人情 / 礼金</label><div class="field-right"><input type="number" class="exp2 o" value="200" min="0"><span class="unit">元/月</span></div></div>
+      <div class="field"><label>其他杂费</label><div class="field-right"><input type="number" class="exp2 o" value="100" min="0"><span class="unit">元/月</span></div></div>
+    </div>
+
+    <div class="total-row">
+      <span class="tl">离职后月支出合计</span>
+      <span class="tv" id="total-exp1">¥0</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">📥 被动收入 &amp; 目标</div>
+    <div class="field"><label>月均被动收入</label><div class="field-right"><input type="number" id="inc2" value="0" min="0"><span class="unit">元/月</span></div></div>
+    <div class="field"><label>希望空窗多久</label><div class="field-right"><input type="number" id="tgt2" value="6" min="1"><span class="unit">个月</span></div></div>
+    <div class="field"><label>应急储备底线</label><div class="field-right"><input type="number" id="em2" value="20000" min="0"><span class="unit">元</span></div></div>
+  </div>
+
+  <button class="calc-btn" onclick="calcSurvive()">✨ 计算续航时间</button>
+
+  <div class="result" id="res1">
+    <div id="v1" class="verdict-card"></div>
+    <div class="metrics" id="cards1"></div>
+    <div class="breakdown-card" id="bd1"></div>
+    <div class="burndown-card" id="burndown1" style="display:none">
+      <div class="bc-title">📉 资金消耗曲线</div>
+      <canvas id="burndown-canvas1" height="180"></canvas>
+    </div>
+    <div class="progress-card" id="prog1" style="display:none"></div>
+    <div class="tips-card" id="tips1"></div>
+  </div>
+</div>
+
+<script>
+// ── Constants ──────────────────────────────────────────────────────────
+const MONTH_NAMES = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+const NOW_MONTH = new Date().getMonth();
+const REMAIN_MONTHS = 12 - NOW_MONTH;
+const NOW_MONTH_T = NOW_MONTH;
+const NOW_YEAR = new Date().getFullYear();
+const STORAGE_KEY = 'resignation_calc_data';
+let _cachedTarget = 0;
+let _saveTimer = null;
+
+// ── Theme toggle ──────────────────────────────────────────────────────
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  document.documentElement.setAttribute('data-theme', isDark ? '' : 'dark');
+  document.getElementById('theme-btn').textContent = isDark ? '🌙' : '☀️';
+  localStorage.setItem('theme', isDark ? 'light' : 'dark');
+  showToast(isDark ? '☀️ 已切换到浅色模式' : '🌙 已切换到深色模式');
+}
+
+// Restore theme
+(function restoreTheme() {
+  const saved = localStorage.getItem('theme');
+  if (saved === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    setTimeout(() => { document.getElementById('theme-btn').textContent = '☀️'; }, 0);
+  }
+})();
+
+// ── Toast ──────────────────────────────────────────────────────────────
+function showToast(msg, duration = 2000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+
+
+// ── Reset ─────────────────────────────────────────────────────────────
+function showResetModal() { document.getElementById('reset-modal').classList.add('show'); }
+function closeResetModal() { document.getElementById('reset-modal').classList.remove('show'); }
+function confirmReset() {
+  localStorage.removeItem(STORAGE_KEY);
+  closeResetModal();
+  showToast('🔄 数据已重置');
+  setTimeout(() => location.reload(), 500);
+}
+
+// ── Build extra income grid ───────────────────────────────────────────
+(function buildExtraGrid() {
+  const grid = document.getElementById('extra-grid');
+  let html = '';
+  for (let i = NOW_MONTH; i < 12; i++) {
+    html += `<div class="extra-cell">
+      <span class="ec-month">${MONTH_NAMES[i]}</span>
+      <input type="number" id="extra-${i}" value="0" min="0" placeholder="额外收入" oninput="updateIncome()">
+      <span class="unit">元</span>
+    </div>`;
+  }
+  grid.innerHTML = html;
+})();
+
+// ── Build tracker grid ────────────────────────────────────────────────
+(function buildTrackerGrid() {
+  const grid = document.getElementById('tracker-grid');
+  let html = '';
+  for (let i = 0; i <= NOW_MONTH_T; i++) {
+    const isCurrent = (i === NOW_MONTH_T);
+    html += `<div class="tracker-cell">
+      <span class="tc-month">${MONTH_NAMES[i]}</span>
+      <input type="number" id="tr-${i}" value="0" min="0"
+        placeholder="${isCurrent ? '本月存入' : '当月存入'}"
+        oninput="updateProgress()">
+      <span class="unit">元</span>
+      ${isCurrent ? '<span class="month-tag">本月</span>' : ''}
+    </div>`;
+  }
+  grid.innerHTML = html;
+})();
+
+// ── Toggle helpers ────────────────────────────────────────────────────
+function toggleTracker(head) {
+  const body = document.getElementById('tracker-body');
+  const chev = head.querySelector('.group-chev');
+  const hidden = body.style.display === 'none';
+  body.style.display = hidden ? '' : 'none';
+  chev.classList.toggle('open', hidden);
+}
+
+function toggleExtra(head) {
+  const body = document.getElementById('extra-body');
+  const chev = head.querySelector('.group-chev');
+  const hidden = body.style.display === 'none';
+  body.style.display = hidden ? '' : 'none';
+  chev.classList.toggle('open', hidden);
+}
+
+function toggleGrp(head, bodyId) {
+  const body = document.getElementById(bodyId);
+  const chev = head.querySelector('.group-chev');
+  const hidden = body.style.display === 'none';
+  body.style.display = hidden ? '' : 'none';
+  chev.classList.toggle('open', hidden);
+}
+
+// ── Progress tracker ──────────────────────────────────────────────────
+function getMonthlyTotal() {
+  let t = 0;
+  for (let i = 0; i <= NOW_MONTH_T; i++) {
+    const el = document.getElementById('tr-' + i);
+    if (el) t += parseFloat(el.value) || 0;
+  }
+  return t;
+}
+
+function updateProgress() {
+  const baseSavings = parseFloat(document.getElementById('savings')?.value) || 0;
+  const invest = (parseFloat(document.getElementById('invest')?.value) || 0) * 0.8;
+  const debtBal = getDebts().balance;
+  const monthly = getMonthlyTotal();
+  const target = _cachedTarget;
+
+  document.getElementById('ts-sync-savings').textContent = '¥' + Math.round(baseSavings + invest).toLocaleString();
+  document.getElementById('ts-sync-debt').textContent = debtBal > 0 ? '-¥' + Math.round(debtBal).toLocaleString() : '¥0';
+  document.getElementById('ts-sync-debt').style.color = debtBal > 0 ? 'var(--red)' : 'var(--green)';
+
+  const baseNet = baseSavings + invest - debtBal;
+  const totalNet = baseNet + monthly;
+
+  document.getElementById('ts-net').textContent = (baseNet >= 0 ? '¥' : '-¥') + Math.round(Math.abs(baseNet)).toLocaleString();
+  document.getElementById('ts-net').style.color = baseNet >= 0 ? 'var(--text)' : 'var(--red)';
+  document.getElementById('ts-extra').textContent = monthly > 0 ? '+¥' + Math.round(monthly).toLocaleString() : '¥0';
+  document.getElementById('ts-total-net').textContent = '¥' + Math.round(Math.max(0, totalNet)).toLocaleString();
+
+  document.getElementById('tracker-extra-label').textContent =
+    monthly > 0 ? '已存 ¥' + Math.round(monthly).toLocaleString() : '点击展开';
+
+  if (target > 0) {
+    document.getElementById('ts-target').textContent = '¥' + Math.round(target).toLocaleString();
+    document.getElementById('ts-target').style.color = 'var(--text)';
+    const gap = Math.max(0, target - totalNet);
+    const pct = Math.min(100, Math.round(totalNet / target * 100));
+    const gapEl = document.getElementById('ts-gap');
+    gapEl.textContent = gap > 0 ? '¥' + Math.round(gap).toLocaleString() : '🎉 已达标！';
+    gapEl.style.color = gap > 0 ? 'var(--red)' : 'var(--green)';
+    document.getElementById('ts-pct').textContent = pct + '%';
+    const bar = document.getElementById('ts-bar');
+    bar.style.width = pct + '%';
+    const cheers = [
+      [0, '加油！每存一分都是向自由迈进一步 💪'],
+      [20, '已完成 1/5，继续保持！✊'],
+      [40, '快一半了，你比想象中更有执行力 🔥'],
+      [60, '超过一半！终点已经在望 👀'],
+      [80, '最后冲刺！胜利近在眼前 🏁'],
+      [95, '差一点点就到了！别停下 ⚡'],
+      [100, '已达标，可以考虑提离职了！🎉'],
+    ];
+    const msg = [...cheers].reverse().find(([t]) => pct >= t);
+    document.getElementById('ts-cheer').textContent = msg ? msg[1] : '';
+  } else {
+    document.getElementById('ts-target').textContent = '先点击「计算最佳离职时机」';
+    document.getElementById('ts-target').style.color = 'var(--text3)';
+    document.getElementById('ts-gap').textContent = '-';
+    document.getElementById('ts-gap').style.color = 'var(--text3)';
+    document.getElementById('ts-cheer').textContent = '';
+  }
+  scheduleSave();
+}
+
+function setTrackerTarget(target) {
+  _cachedTarget = target;
+  updateProgress();
+}
+
+// ── One-time expenses ─────────────────────────────────────────────────
+const ONETIME_PRESETS = ['考驾照', '学游泳', '学钢琴', '旅行', '装修', '买电脑', '体检'];
+let _otIdx = 0;
+
+function addOnetime(name = '', amt = 0) {
+  const list = document.getElementById('onetime-list');
+  const idx = _otIdx++;
+  const placeholder = ONETIME_PRESETS[idx % ONETIME_PRESETS.length];
+  const div = document.createElement('div');
+  div.className = 'onetime-item';
+  div.id = 'ot-item-' + idx;
+  div.style.animation = 'fadeIn 0.2s ease';
+  div.innerHTML = `
+    <input class="ot-name" type="text" placeholder="${placeholder}" value="${name}">
+    <input class="ot-amt" type="number" value="${amt}" min="0" oninput="updateOnetimeTotal()">
+    <span class="unit">元</span>
+    <button class="del" onclick="removeOnetime('ot-item-${idx}')">×</button>`;
+  list.appendChild(div);
+  document.getElementById('onetime-total-row').style.display = '';
+  updateOnetimeTotal();
+}
+
+function removeOnetime(id) {
+  const el = document.getElementById(id);
+  if (el) { el.style.animation = 'fadeIn 0.2s ease reverse'; setTimeout(() => el.remove(), 150); }
+  setTimeout(() => {
+    const list = document.getElementById('onetime-list');
+    document.getElementById('onetime-total-row').style.display = list.children.length ? '' : 'none';
+    updateOnetimeTotal();
+  }, 160);
+}
+
+function getOnetimeTotal() {
+  let t = 0;
+  document.querySelectorAll('.ot-amt').forEach(i => t += parseFloat(i.value) || 0);
+  return t;
+}
+
+function updateOnetimeTotal() {
+  const t = getOnetimeTotal();
+  document.getElementById('onetime-total').textContent = '¥' + Math.round(t).toLocaleString();
+  scheduleSave();
+}
+
+// ── Income ────────────────────────────────────────────────────────────
+function updateIncome() {
+  const base = parseFloat(document.getElementById('salary').value) || 0;
+  let extraTotal = 0;
+  for (let i = NOW_MONTH; i < 12; i++) {
+    const el = document.getElementById('extra-' + i);
+    if (el) extraTotal += parseFloat(el.value) || 0;
+  }
+  const avg = (base * REMAIN_MONTHS + extraTotal) / REMAIN_MONTHS;
+  document.getElementById('is-avg').textContent = '¥' + Math.round(avg).toLocaleString();
+
+  const expInputs = document.querySelectorAll('.exp');
+  let totalExp = 0;
+  expInputs.forEach(i => totalExp += parseFloat(i.value) || 0);
+  const debts = getDebts();
+  const netSave = avg - totalExp - debts.monthly;
+  const saveEl = document.getElementById('is-save');
+  if (totalExp > 0) {
+    saveEl.textContent = (netSave >= 0 ? '+' : '') + '¥' + Math.round(Math.abs(netSave)).toLocaleString() + '/月';
+    saveEl.style.color = netSave >= 0 ? 'var(--green)' : 'var(--red)';
+  } else {
+    saveEl.textContent = '-';
+    saveEl.style.color = 'var(--text3)';
+  }
+  const lbl = document.getElementById('extra-sum-label');
+  lbl.textContent = extraTotal > 0 ? '额外 +¥' + Math.round(extraTotal).toLocaleString() : '点击展开';
+  scheduleSave();
+  return avg;
+}
+
+function getAvgIncome() {
+  const base = parseFloat(document.getElementById('salary').value) || 0;
+  let extraTotal = 0;
+  for (let i = NOW_MONTH; i < 12; i++) {
+    const el = document.getElementById('extra-' + i);
+    if (el) extraTotal += parseFloat(el.value) || 0;
+  }
+  return (base * REMAIN_MONTHS + extraTotal) / REMAIN_MONTHS;
+}
+
+// ── Tab switching ─────────────────────────────────────────────────────
+function switchTab(i) {
+  document.querySelectorAll('.tab').forEach((t, j) => t.classList.toggle('active', i === j));
+  document.querySelectorAll('.page').forEach((p, j) => p.classList.toggle('active', i === j));
+}
+
+// ── Debt helpers ──────────────────────────────────────────────────────
+let _dbtIdx = 0;
+const DEBT_PRESETS = ['花呗', '信用卡', '房贷', '车贷', '网贷'];
+
+function addDbt(name = '', bal = 0, mode = 'lump', monthly = 0) {
+  const list = document.getElementById('debts');
+  const idx = _dbtIdx++;
+  const ph = DEBT_PRESETS[idx % DEBT_PRESETS.length];
+  const div = document.createElement('div');
+  div.className = 'debt-card';
+  div.id = 'dbt-' + idx;
+  div.style.animation = 'fadeIn 0.2s ease';
+  div.innerHTML = `
+    <div class="debt-card-row1">
+      <input class="debt-name" type="text" placeholder="${ph}" value="${name}">
+      <input class="debt-bal" type="number" value="${bal}" min="0" placeholder="余额" oninput="updateDebtSummary()">
+      <span class="unit">元</span>
+      <button class="del" onclick="removeDbt('dbt-${idx}')">×</button>
+    </div>
+    <div class="debt-card-row2">
+      <button class="repay-btn ${mode === 'lump' ? 'active' : ''}" onclick="setRepayMode('dbt-${idx}','lump')">💰 一次性还清</button>
+      <button class="repay-btn ${mode === 'monthly' ? 'active' : ''}" onclick="setRepayMode('dbt-${idx}','monthly')">📅 按月分期</button>
+    </div>
+    <div class="debt-monthly-row" id="dbt-mo-${idx}" style="${mode === 'monthly' ? '' : 'display:none'}">
+      <label>每月还款额</label>
+      <input type="number" value="${monthly}" min="0" placeholder="0" oninput="updateDebtSummary()">
+      <span class="unit">元/月</span>
+    </div>`;
+  list.appendChild(div);
+  document.getElementById('debt-total-row').style.display = '';
+  updateDebtSummary();
+}
+
+function setRepayMode(cardId, mode) {
+  const card = document.getElementById(cardId);
+  card.querySelectorAll('.repay-btn').forEach(b => b.classList.remove('active'));
+  card.querySelectorAll('.repay-btn')[mode === 'lump' ? 0 : 1].classList.add('active');
+  const moRow = card.querySelector('.debt-monthly-row');
+  moRow.style.display = mode === 'monthly' ? '' : 'none';
+  updateDebtSummary();
+}
+
+function removeDbt(id) {
+  const el = document.getElementById(id);
+  if (el) { el.style.animation = 'fadeIn 0.2s ease reverse'; setTimeout(() => el.remove(), 150); }
+  setTimeout(() => {
+    const list = document.getElementById('debts');
+    document.getElementById('debt-total-row').style.display = list.children.length ? '' : 'none';
+    updateDebtSummary();
+  }, 160);
+}
+
+function updateDebtSummary() {
+  const d = getDebts();
+  const parts = [];
+  if (d.balance > 0) parts.push('余额 ¥' + Math.round(d.balance).toLocaleString());
+  if (d.monthly > 0) parts.push('月还 ¥' + Math.round(d.monthly).toLocaleString());
+  document.getElementById('debt-total-summary').textContent = parts.length ? parts.join('　') : '¥0';
+  updateIncome();
+  updateProgress();
+}
+
+function getDebts() {
+  let bal = 0, mo = 0;
+  document.querySelectorAll('.debt-card').forEach(card => {
+    const balInput = card.querySelector('.debt-bal');
+    const cardBal = parseFloat(balInput?.value) || 0;
+    const isLump = card.querySelectorAll('.repay-btn')[0]?.classList.contains('active');
+    if (isLump) {
+      bal += cardBal;
+    } else {
+      bal += cardBal;
+      const moInput = card.querySelector('.debt-monthly-row input');
+      mo += parseFloat(moInput?.value) || 0;
+    }
+  });
+  return { balance: bal, monthly: mo };
+}
+
+// ── Live totals ───────────────────────────────────────────────────────
+const grps0 = { housing: '🏠', food: '🍜', transport: '🚇', ent: '🎮', health: '💊', other: '📦' };
+const grps1 = { h: '🏠', f: '🍜', t: '🚇', e: '🎮', he: '💊', o: '📦' };
+const grpNames0 = { housing: '住房', food: '饮食', transport: '交通', ent: '娱乐&社交', health: '健康&成长', other: '其他' };
+const grpNames1 = { h: '住房', f: '饮食', t: '交通', e: '娱乐&社交', he: '健康&成长', o: '其他' };
+
+function sumClass(cls) { let t = 0; document.querySelectorAll('.exp.' + cls).forEach(i => t += parseFloat(i.value) || 0); return t; }
+function sumClass2(cls) { let t = 0; document.querySelectorAll('.exp2.' + cls).forEach(i => t += parseFloat(i.value) || 0); return t; }
+
+function updateTotals0() {
+  let total = 0;
+  Object.keys(grps0).forEach(g => { const s = sumClass(g); total += s; document.getElementById('gs-' + g).textContent = '¥' + Math.round(s).toLocaleString(); });
+  document.getElementById('total-exp0').textContent = '¥' + Math.round(total).toLocaleString();
+  scheduleSave();
+}
+function updateTotals1() {
+  let total = 0;
+  Object.keys(grps1).forEach(g => { const s = sumClass2(g); total += s; document.getElementById('gs2-' + g).textContent = '¥' + Math.round(s).toLocaleString(); });
+  document.getElementById('total-exp1').textContent = '¥' + Math.round(total).toLocaleString();
+  scheduleSave();
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────
+function vn(id) { return parseFloat(document.getElementById(id).value) || 0; }
+function fmt(n) { return Math.abs(n) >= 10000 ? (n / 10000).toFixed(1) + '万' : Math.round(n).toLocaleString(); }
+const barCols = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#06b6d4', '#8b5cf6'];
+
+function renderBreakdown(id, items, total) {
+  const el = document.getElementById(id);
+  // Donut chart
+  let donutSvg = renderDonut(items, total);
+  el.innerHTML = '<div class="bc-title">📊 支出结构</div>' +
+    '<div class="chart-container">' + donutSvg + '</div>' +
+    items.map((x, i) => {
+      const pct = total > 0 ? Math.round(x.val / total * 100) : 0;
+      return `<div class="bd-row">
+        <span class="bd-icon">${x.icon}</span>
+        <span class="bd-label">${x.label}</span>
+        <div class="bd-bar-bg"><div class="bd-bar-fill" style="width:${pct}%;background:${barCols[i % barCols.length]}"></div></div>
+        <span class="bd-val">¥${Math.round(x.val).toLocaleString()} <span class="bd-pct">${pct}%</span></span>
+      </div>`;
+    }).join('');
+}
+
+// ── Donut chart (SVG) ─────────────────────────────────────────────────
+function renderDonut(items, total) {
+  if (total <= 0) return '';
+  const size = 140, cx = size / 2, cy = size / 2, r = 50, stroke = 18;
+  const circumference = 2 * Math.PI * r;
+  let offset = 0;
+  let arcs = '';
+  items.forEach((item, i) => {
+    const pct = item.val / total;
+    const dashLen = pct * circumference;
+    const dashGap = circumference - dashLen;
+    arcs += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none"
+      stroke="${barCols[i % barCols.length]}" stroke-width="${stroke}"
+      stroke-dasharray="${dashLen} ${dashGap}"
+      stroke-dashoffset="${-offset}" stroke-linecap="round"
+      style="transition: stroke-dasharray 0.6s ease, stroke-dashoffset 0.6s ease;"
+      transform="rotate(-90 ${cx} ${cy})"/>`;
+    offset += dashLen;
+  });
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+    ${arcs}
+    <text x="${cx}" y="${cy - 6}" text-anchor="middle" fill="var(--text)" font-size="16" font-weight="800">¥${fmt(total)}</text>
+    <text x="${cx}" y="${cy + 12}" text-anchor="middle" fill="var(--text3)" font-size="10" font-weight="500">月支出</text>
+  </svg>`;
+}
+
+// ── Burn-down chart (Canvas) ──────────────────────────────────────────
+function drawBurndown(canvasId, totalFund, monthlyBurn, months) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = 180 * dpr;
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = 180;
+  const pad = { top: 20, right: 16, bottom: 30, left: 50 };
+  const gW = W - pad.left - pad.right;
+  const gH = H - pad.top - pad.bottom;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Data points
+  const pts = [];
+  let bal = totalFund;
+  for (let m = 0; m <= months && bal >= 0; m++) {
+    pts.push({ m, v: bal });
+    bal -= monthlyBurn;
+  }
+  if (bal < 0 && pts.length <= months + 1) pts.push({ m: pts.length, v: 0 });
+
+  const maxV = totalFund;
+  const maxM = pts[pts.length - 1].m;
+
+  function x(m) { return pad.left + (m / Math.max(maxM, 1)) * gW; }
+  function y(v) { return pad.top + (1 - v / Math.max(maxV, 1)) * gH; }
+
+  // Grid lines
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const yy = pad.top + (i / 4) * gH;
+    ctx.beginPath(); ctx.moveTo(pad.left, yy); ctx.lineTo(W - pad.right, yy); ctx.stroke();
+  }
+
+  // Gradient fill
+  const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + gH);
+  grad.addColorStop(0, 'rgba(99,102,241,0.25)');
+  grad.addColorStop(1, 'rgba(99,102,241,0.02)');
+  ctx.beginPath();
+  ctx.moveTo(x(pts[0].m), y(pts[0].v));
+  pts.forEach(p => ctx.lineTo(x(p.m), y(p.v)));
+  ctx.lineTo(x(pts[pts.length - 1].m), pad.top + gH);
+  ctx.lineTo(x(pts[0].m), pad.top + gH);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Line
+  ctx.beginPath();
+  ctx.moveTo(x(pts[0].m), y(pts[0].v));
+  pts.forEach(p => ctx.lineTo(x(p.m), y(p.v)));
+  ctx.strokeStyle = '#6366f1';
+  ctx.lineWidth = 2.5;
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+
+  // Dots
+  pts.forEach(p => {
+    ctx.beginPath();
+    ctx.arc(x(p.m), y(p.v), 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#6366f1';
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  });
+
+  // Emergency line
+  const emVal = vn('emergency') || vn('em2') || 20000;
+  if (emVal > 0 && emVal < maxV) {
+    ctx.setLineDash([6, 4]);
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y(emVal));
+    ctx.lineTo(W - pad.right, y(emVal));
+    ctx.strokeStyle = '#ef4444';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#ef4444';
+    ctx.font = '10px -apple-system, sans-serif';
+    ctx.fillText('应急底线', W - pad.right - 48, y(emVal) - 5);
+  }
+
+  // Labels
+  ctx.fillStyle = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)';
+  ctx.font = '10px -apple-system, sans-serif';
+  ctx.textAlign = 'center';
+  const step = maxM <= 6 ? 1 : maxM <= 12 ? 2 : Math.ceil(maxM / 6);
+  for (let m = 0; m <= maxM; m += step) {
+    ctx.fillText(m + '月', x(m), H - 8);
+  }
+  ctx.textAlign = 'right';
+  for (let i = 0; i <= 4; i++) {
+    const v = maxV * (1 - i / 4);
+    ctx.fillText(fmt(v), pad.left - 6, pad.top + (i / 4) * gH + 4);
+  }
+}
+
+// ── Page 0 Calculate ──────────────────────────────────────────────────
+function calcPlan() {
+  const salary = getAvgIncome();
+  const savings = vn('savings'), invest = vn('invest') * 0.8;
+  const debts = getDebts();
+  const qm = vn('quit_monthly'), qmo = vn('quit_months');
+  const em = vn('emergency'), np = vn('nplus1');
+
+  // Validation
+  if (salary <= 0) { showToast('⚠️ 请填写税后月薪'); return; }
+  if (qm <= 0) { showToast('⚠️ 请填写离职后月支出'); return; }
+  if (qmo <= 0) { showToast('⚠️ 请填写空窗期月数'); return; }
+
+  const grpTotals = {};
+  Object.keys(grps0).forEach(g => grpTotals[g] = sumClass(g));
+  const totalExp = Object.values(grpTotals).reduce((a, b) => a + b, 0) + debts.monthly;
+  const save = salary - totalExp;
+  const netAssets = savings + invest - debts.balance;
+  const oneTime = getOnetimeTotal();
+  const targetFund = qm * qmo + em + debts.balance;
+  const avail = netAssets + np - em - oneTime;
+  const stillNeed = Math.max(0, targetFund - (savings + invest + np - oneTime));
+  const mToQuit = save > 0 ? Math.ceil(stillNeed / save) : 9999;
+  const canNow = avail >= qm * qmo;
+
+  document.getElementById('res0').style.display = 'block';
+
+  // Verdict
+  const v0 = document.getElementById('v0');
+  let vtitle, vdesc, vbg, vbo;
+  if (canNow) {
+    vbg = 'var(--green-bg)'; vbo = 'var(--green-bd)';
+    vtitle = '✅ 现在就可以考虑提离职！';
+    vdesc = `扣除负债和应急储备后，还有 ${fmt(avail)} 元，足以支撑 ${qmo} 个月空窗期。`;
+  } else if (save <= 0) {
+    vbg = 'var(--red-bg)'; vbo = 'var(--red-bd)';
+    vtitle = '🚨 目前月光，先控制支出';
+    vdesc = `月薪 ${fmt(salary)} 元，月支出 ${fmt(totalExp)} 元，每月不剩钱。建议先减少负债和开销。`;
+  } else {
+    vbg = 'var(--orange-bg)'; vbo = 'var(--orange-bd)';
+    vtitle = `🗓️ 预计再存 ${mToQuit} 个月后可以离职`;
+    const d = new Date(); d.setMonth(d.getMonth() + mToQuit);
+    vdesc = `按每月净存 ${fmt(save)} 元，预计 ${d.getFullYear()} 年 ${d.getMonth() + 1} 月达到条件（还需积累 ${fmt(stillNeed)} 元）。`;
+  }
+  v0.style.cssText = `background:${vbg};border-color:${vbo};`;
+  v0.innerHTML = `<div class="vt">${vtitle}</div><div class="vd">${vdesc}</div>`;
+
+  // Metrics
+  document.getElementById('cards0').innerHTML = `
+    <div class="metric"><div class="ml">净资产</div><div class="mv" style="color:${netAssets >= 0 ? 'var(--green)' : 'var(--red)'}">${fmt(netAssets)}元</div><div class="ms">资产 - 负债</div></div>
+    <div class="metric"><div class="ml">月净结余</div><div class="mv" style="color:${save >= 0 ? 'var(--green)' : 'var(--red)'}">${fmt(save)}元</div><div class="ms">薪资 - 全部支出</div></div>
+    <div class="metric"><div class="ml">离职目标金额</div><div class="mv">${fmt(targetFund)}元</div><div class="ms">空窗费+应急底线+负债</div></div>
+    <div class="metric"><div class="ml">负债总额</div><div class="mv" style="color:${debts.balance > 0 ? 'var(--red)' : 'var(--text)'}">${fmt(debts.balance)}元</div><div class="ms">月还 ${fmt(debts.monthly)} 元</div></div>
+    <div class="metric"><div class="ml">一次性支出</div><div class="mv" style="color:${oneTime > 0 ? 'var(--red)' : 'var(--text3)'}">${oneTime > 0 ? fmt(oneTime) + '元' : '无'}</div><div class="ms">直接扣除可用资金</div></div>
+    <div class="metric"><div class="ml">还差多少</div><div class="mv" style="color:${stillNeed <= 0 ? 'var(--green)' : 'var(--red)'}">${stillNeed <= 0 ? '已达标' : '差' + fmt(stillNeed) + '元'}</div><div class="ms">距离目标</div></div>
+    <div class="metric"><div class="ml">预计时间</div><div class="mv">${canNow ? '现在就行' : save <= 0 ? '无法积累' : mToQuit + '个月'}</div><div class="ms">${canNow ? '随时可离职' : save <= 0 ? '先降低支出' : Math.floor(mToQuit / 12) + '年' + mToQuit % 12 + '月'}</div></div>
+  `;
+
+  // Breakdown with donut
+  const bdItems = Object.keys(grps0).map(g => ({ icon: grps0[g], label: grpNames0[g], val: grpTotals[g] })).filter(x => x.val > 0);
+  if (debts.monthly > 0) bdItems.push({ icon: '💳', label: '负债还款', val: debts.monthly });
+  renderBreakdown('bd0', bdItems, totalExp);
+
+  // Burn-down chart
+  if (canNow || save > 0) {
+    const bd0 = document.getElementById('burndown0');
+    bd0.style.display = '';
+    setTimeout(() => drawBurndown('burndown-canvas0', avail + qm * qmo, qm, qmo + 3), 100);
+  }
+
+  // Timeline
+  if (!canNow && save > 0) {
+    const tl = document.getElementById('tl0'); tl.style.display = '';
+    let html = '<div class="tc-title">📅 积累进度预测</div>';
+    [3, 6, 12].forEach(m => {
+      const proj = Math.max(0, avail) + save * m;
+      const ok = proj >= qm * qmo;
+      html += `<div class="tl-row"><div class="tl-dot" style="background:${ok ? 'var(--green)' : 'var(--text3)'}"></div><div class="tl-label">再存 ${m} 个月</div><div class="tl-val">${fmt(proj)} 元 ${ok ? '✅' : ''}</div></div>`;
+    });
+    tl.innerHTML = html;
+
+    const pct = Math.min(100, Math.round(Math.max(0, avail) / (qm * qmo) * 100));
+    const p0 = document.getElementById('prog0'); p0.style.display = '';
+    p0.innerHTML = `<div class="pc-row"><span>离职目标达成进度</span><span>${pct}%</span></div><div class="prog-bg"><div class="prog-fill" style="width:${pct}%;"></div></div>`;
+  } else {
+    document.getElementById('tl0').style.display = 'none';
+    document.getElementById('prog0').style.display = 'none';
+  }
+
+  // Tips
+  const bigG = Object.keys(grpTotals).reduce((a, b) => grpTotals[a] > grpTotals[b] ? a : b);
+  const tipList = [];
+  if (debts.balance > 0) tipList.push(`建议离职前尽量还清负债（共 ${fmt(debts.balance)} 元），减少离职后的还款压力。`);
+  tipList.push(`你目前支出最多的是「${grpNames0[bigG]}」（${fmt(grpTotals[bigG])} 元/月），是否有压缩空间？`);
+  if (save > 0 && save < 3000) tipList.push('月净结余偏少，副业或加薪是提前离职的最短路径。');
+  tipList.push('离职前建议购买商业医疗险，并规划灵活就业身份缴纳社保，避免断缴影响权益。');
+  if (oneTime > 0) tipList.push(`一次性支出 ${fmt(oneTime)} 元已计入，确认是否可以延后或缩减。`);
+  document.getElementById('tips0').innerHTML = '<div class="tc-title">💡 个性化建议</div>' +
+    tipList.map(t => `<div class="tip-item"><span class="tip-arrow">›</span><span>${t}</span></div>`).join('');
+
+  document.getElementById('res0').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  setTrackerTarget(targetFund);
+  showToast('✅ 计算完成');
+}
+
+// ── Page 1 Calculate ──────────────────────────────────────────────────
+function calcSurvive() {
+  const s = vn('s2'), a = vn('a2'), c = vn('c2'), d = vn('d2');
+
+  // Validation
+  if (s <= 0 && a <= 0 && c <= 0) { showToast('⚠️ 请填写离职时资产'); return; }
+
+  const grpTotals2 = {};
+  Object.keys(grps1).forEach(g => grpTotals2[g] = sumClass2(g));
+  const monthly = Object.values(grpTotals2).reduce((a, b) => a + b, 0);
+  const income = vn('inc2'), tgt = vn('tgt2'), em = vn('em2');
+  const netMo = Math.max(0, monthly - income);
+  const total = s + a + c - d, avail = total - em;
+  const months = netMo > 0 ? Math.floor(avail / netMo) : 999;
+  const canAchieve = avail >= netMo * tgt;
+  const pct = Math.min(100, Math.round(tgt / Math.max(months, 0.01) * 100));
+
+  document.getElementById('res1').style.display = 'block';
+
+  const v1 = document.getElementById('v1');
+  let vbg, vbo, vi, vt, vd;
+  if (months >= 999) { vbg = 'var(--green-bg)'; vbo = 'var(--green-bd)'; vi = '🎉'; vt = '完全自由！'; vd = '被动收入已覆盖支出，可随时裸辞。'; }
+  else if (months >= tgt * 1.5) { vbg = 'var(--green-bg)'; vbo = 'var(--green-bd)'; vi = '✅'; vt = '底气充足，可以离职！'; vd = `资金可支撑 ${months} 个月，比目标多 ${months - tgt} 个月。`; }
+  else if (months >= tgt) { vbg = 'var(--orange-bg)'; vbo = 'var(--orange-bd)'; vi = '🟡'; vt = '勉强达标，建议留点余量'; vd = `可支撑 ${months} 个月，刚好满足目标，建议适当节流。`; }
+  else if (months >= tgt * 0.5) { vbg = 'var(--orange-bg)'; vbo = 'var(--orange-bd)'; vi = '⚠️'; vt = '资金偏紧，需要调整'; vd = `仅够 ${months} 个月，距目标差 ${tgt - months} 个月。`; }
+  else { vbg = 'var(--red-bg)'; vbo = 'var(--red-bd)'; vi = '🚨'; vt = '底气不足，继续积累'; vd = `只能撑 ${months} 个月，建议继续存钱。`; }
+  v1.style.cssText = `background:${vbg};border-color:${vbo};`;
+  v1.innerHTML = `<div class="vi">${vi}</div><div class="vt">${vt}</div><div class="vd">${vd}</div>`;
+
+  document.getElementById('cards1').innerHTML = `
+    <div class="metric"><div class="ml">可动用资金</div><div class="mv">${fmt(avail)}元</div><div class="ms">扣负债+应急后</div></div>
+    <div class="metric"><div class="ml">月净支出</div><div class="mv">${fmt(netMo)}元</div><div class="ms">支出 - 被动收入</div></div>
+    <div class="metric"><div class="ml">最长续航</div><div class="mv">${months >= 999 ? '∞' : months + '个月'}</div><div class="ms">${months >= 999 ? '已自由' : Math.floor(months / 12) + '年' + months % 12 + '月'}</div></div>
+    <div class="metric"><div class="ml">目标花费</div><div class="mv">${fmt(netMo * tgt)}元</div><div class="ms">${tgt}个月所需</div></div>
+    <div class="metric"><div class="ml">资金缺口</div><div class="mv" style="color:${canAchieve ? 'var(--green)' : 'var(--red)'}">${canAchieve ? '无缺口' : '差' + fmt(netMo * tgt - avail) + '元'}</div><div class="ms">${canAchieve ? '目标可达成' : '需补充'}</div></div>
+    <div class="metric"><div class="ml">月支出合计</div><div class="mv">${fmt(monthly)}元</div><div class="ms">所有类别之和</div></div>
+  `;
+
+  const bdItems2 = Object.keys(grps1).map(g => ({ icon: grps1[g], label: grpNames1[g], val: grpTotals2[g] })).filter(x => x.val > 0);
+  renderBreakdown('bd1', bdItems2, monthly);
+
+  // Burn-down chart
+  if (netMo > 0 && avail > 0) {
+    const bd1 = document.getElementById('burndown1');
+    bd1.style.display = '';
+    setTimeout(() => drawBurndown('burndown-canvas1', avail, netMo, Math.min(months + 2, 36)), 100);
+  }
+
+  const p1 = document.getElementById('prog1'); p1.style.display = '';
+  const col = pct <= 60 ? 'var(--green)' : pct <= 90 ? 'var(--orange)' : 'var(--red)';
+  p1.innerHTML = `<div class="pc-row"><span>目标消耗可用资金</span><span>${pct}%</span></div><div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${col}"></div></div>`;
+
+  const tipList = [];
+  if (income === 0) tipList.push('暂无被动收入——哪怕每月 500 元副业，也能明显延长续航时间。');
+  if (d > 0) tipList.push(`负债 ${fmt(d)} 元已从资产扣除，建议离职前尽量还清。`);
+  tipList.push('以灵活就业身份缴纳社保每月约 1000–2000 元，已包含在你的支出里了吗？');
+  if (months < tgt) tipList.push(`缺口 ${fmt(netMo * tgt - avail)} 元，考虑缩减「娱乐&社交」或「旅行」支出。`);
+  document.getElementById('tips1').innerHTML = '<div class="tc-title">💡 建议</div>' +
+    tipList.map(t => `<div class="tip-item"><span class="tip-arrow">›</span><span>${t}</span></div>`).join('');
+
+  document.getElementById('res1').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  showToast('✅ 计算完成');
+}
+
+// ── localStorage persistence ──────────────────────────────────────────
+function scheduleSave() {
+  if (_saveTimer) clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(saveData, 800);
+}
+
+function saveData() {
+  try {
+    const data = {
+      // Page 0
+      salary: vn('salary'),
+      savings: vn('savings'),
+      invest: vn('invest'),
+      quit_monthly: vn('quit_monthly'),
+      quit_months: vn('quit_months'),
+      emergency: vn('emergency'),
+      nplus1: vn('nplus1'),
+      // Page 1
+      s2: vn('s2'), a2: vn('a2'), c2: vn('c2'), d2: vn('d2'),
+      inc2: vn('inc2'), tgt2: vn('tgt2'), em2: vn('em2'),
+      // Extra income
+      extras: {},
+      // Tracker
+      tracker: {},
+      // Expenses page 0
+      exp0: [],
+      // Expenses page 1
+      exp1: [],
+      // Debts
+      debts: [],
+      // One-time
+      onetimes: [],
+      // Timestamp
+      savedAt: new Date().toISOString(),
+    };
+    // Extra income
+    for (let i = NOW_MONTH; i < 12; i++) {
+      const el = document.getElementById('extra-' + i);
+      if (el) data.extras[i] = parseFloat(el.value) || 0;
+    }
+    // Tracker
+    for (let i = 0; i <= NOW_MONTH_T; i++) {
+      const el = document.getElementById('tr-' + i);
+      if (el) data.tracker[i] = parseFloat(el.value) || 0;
+    }
+    // Expenses
+    document.querySelectorAll('.exp').forEach(el => data.exp0.push(parseFloat(el.value) || 0));
+    document.querySelectorAll('.exp2').forEach(el => data.exp1.push(parseFloat(el.value) || 0));
+    // Debts
+    document.querySelectorAll('.debt-card').forEach(card => {
+      const name = card.querySelector('.debt-name')?.value || '';
+      const bal = parseFloat(card.querySelector('.debt-bal')?.value) || 0;
+      const isLump = card.querySelectorAll('.repay-btn')[0]?.classList.contains('active');
+      const mo = parseFloat(card.querySelector('.debt-monthly-row input')?.value) || 0;
+      data.debts.push({ name, bal, mode: isLump ? 'lump' : 'monthly', monthly: mo });
+    });
+    // One-time
+    document.querySelectorAll('.onetime-item').forEach(item => {
+      const name = item.querySelector('.ot-name')?.value || '';
+      const amt = parseFloat(item.querySelector('.ot-amt')?.value) || 0;
+      data.onetimes.push({ name, amt });
+    });
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch (e) { /* silent */ }
+}
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+
+    // Simple fields
+    const fields = ['salary', 'savings', 'invest', 'quit_monthly', 'quit_months', 'emergency', 'nplus1', 's2', 'a2', 'c2', 'd2', 'inc2', 'tgt2', 'em2'];
+    fields.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && data[id] !== undefined) el.value = data[id];
+    });
+
+    // Extra income
+    if (data.extras) {
+      Object.keys(data.extras).forEach(i => {
+        const el = document.getElementById('extra-' + i);
+        if (el) el.value = data.extras[i];
+      });
+    }
+
+    // Tracker
+    if (data.tracker) {
+      Object.keys(data.tracker).forEach(i => {
+        const el = document.getElementById('tr-' + i);
+        if (el) el.value = data.tracker[i];
+      });
+    }
+
+    // Expenses
+    if (data.exp0) {
+      const exps = document.querySelectorAll('.exp');
+      data.exp0.forEach((v, i) => { if (exps[i]) exps[i].value = v; });
+    }
+    if (data.exp1) {
+      const exps = document.querySelectorAll('.exp2');
+      data.exp1.forEach((v, i) => { if (exps[i]) exps[i].value = v; });
+    }
+
+    // Debts - clear default, add from saved
+    document.getElementById('debts').innerHTML = '';
+    if (data.debts && data.debts.length > 0) {
+      data.debts.forEach(d => addDbt(d.name, d.bal, d.mode, d.monthly));
+    }
+
+    // One-time
+    if (data.onetimes && data.onetimes.length > 0) {
+      data.onetimes.forEach(o => addOnetime(o.name, o.amt));
+    }
+
+    return true;
+  } catch (e) { return false; }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function () {
+  // Check if running from file:// protocol (mobile bookmark issue)
+  if (window.location.protocol === 'file:') {
+    const errorHtml = `
+      <div style="position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;">
+        <div style="background:var(--card);padding:30px;border-radius:var(--radius);max-width:400px;text-align:center;box-shadow:var(--shadow-lg);">
+          <h3 style="color:var(--red);margin-bottom:15px;">📱 移动端访问提示</h3>
+          <p style="color:var(--text2);margin-bottom:20px;line-height:1.5;">
+            检测到您通过书签访问本地文件，移动端浏览器无法直接访问本地文件系统。<br><br>
+            <strong>解决方案：</strong><br>
+            1. 使用在线版本（推荐）<br>
+            2. 将此文件上传到网络服务器<br>
+            3. 或使用电脑浏览器打开本地文件
+          </p>
+          <div style="display:flex;gap:10px;justify-content:center;margin-top:20px;">
+            <button onclick="window.open('https://yourusername.github.io/resign-calculator/', '_blank')" 
+                    style="background:var(--green);color:white;border:none;padding:10px 20px;border-radius:var(--radius-sm);cursor:pointer;flex:1;">
+              访问在线版本
+            </button>
+            <button onclick="this.parentElement.parentElement.parentElement.style.display='none'" 
+                    style="background:var(--text3);color:white;border:none;padding:10px 20px;border-radius:var(--radius-sm);cursor:pointer;flex:1;">
+              我知道了
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.insertAdjacentHTML('afterbegin', errorHtml);
+    return;
+  }
+
+  const loaded = loadData();
+  if (!loaded) {
+    // Default debt
+    addDbt('花呗', 5000, 'lump', 0);
+  }
+
+  // Bind events
+  document.querySelectorAll('.exp').forEach(i => i.addEventListener('input', updateTotals0));
+  document.querySelectorAll('.exp2').forEach(i => i.addEventListener('input', updateTotals1));
+
+  // Update all displays
+  updateIncome();
+  updateTotals0();
+  updateTotals1();
+  updateProgress();
+
+  if (loaded) {
+    setTimeout(() => showToast('📂 已恢复上次保存的数据'), 300);
+  }
+});
+
+// Auto-update progress when main fields change
+document.addEventListener('input', function (e) {
+  const ids = ['savings', 'invest'];
+  if (ids.includes(e.target?.id) || e.target?.closest('.debt-card')) {
+    updateProgress();
+  }
+  // Auto-save on any input
+  scheduleSave();
+});
+
+// Keyboard shortcut: Enter to calculate
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    const activePage = document.querySelector('.page.active');
+    if (activePage?.id === 'page0') calcPlan();
+    else if (activePage?.id === 'page1') calcSurvive();
+  }
+});
+
+// Deployment guide for mobile access
+function showDeploymentGuide() {
+  const guideHtml = `
+    <div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;">
+      <div style="background:var(--card);padding:30px;border-radius:var(--radius);max-width:500px;max-height:80vh;overflow-y:auto;box-shadow:var(--shadow-lg);">
+        <h3 style="color:var(--accent);margin-bottom:20px;">🚀 部署指南 - 解决移动端访问问题</h3>
+        
+        <div style="margin-bottom:20px;">
+          <h4 style="color:var(--green);margin-bottom:10px;">方法一：使用在线版本（推荐）</h4>
+          <p style="color:var(--text2);margin-bottom:10px;">
+            访问已部署的在线版本，支持移动端和书签功能：
+          </p>
+          <button onclick="window.open('https://yourusername.github.io/resign-calculator/', '_blank')" 
+                  style="background:var(--green);color:white;border:none;padding:10px 20px;border-radius:var(--radius-sm);cursor:pointer;width:100%;margin-bottom:10px;">
+            访问在线版本
+          </button>
+        </div>
+        
+        <div style="margin-bottom:20px;">
+          <h4 style="color:var(--orange);margin-bottom:10px;">方法二：GitHub Pages 部署</h4>
+          <ol style="color:var(--text2);padding-left:20px;margin-bottom:10px;">
+            <li>创建 GitHub 账号（如果还没有）</li>
+            <li>新建一个名为 "resign-calculator" 的仓库</li>
+            <li>将此 HTML 文件上传到仓库</li>
+            <li>在仓库设置中启用 GitHub Pages</li>
+            <li>访问：https://你的用户名.github.io/resign-calculator/</li>
+          </ol>
+        </div>
+        
+        <div style="margin-bottom:20px;">
+          <h4 style="color:var(--accent-light);margin-bottom:10px;">方法三：其他静态托管服务</h4>
+          <p style="color:var(--text2);margin-bottom:10px;">
+            也可以使用 Netlify、Vercel 等免费静态网站托管服务。
+          </p>
+        </div>
+        
+        <button onclick="this.parentElement.parentElement.style.display='none'" 
+                style="background:var(--text3);color:white;border:none;padding:10px 20px;border-radius:var(--radius-sm);cursor:pointer;width:100%;">
+          关闭指南
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.insertAdjacentHTML('beforeend', guideHtml);
+}
+
+// Add deployment guide button to footer if needed
+// This can be triggered manually or based on certain conditions
+
+// Add a small deployment guide button in the footer
+setTimeout(() => {
+  const footer = document.querySelector('footer') || document.body;
+  const guideBtn = document.createElement('div');
+  guideBtn.innerHTML = `
+    <div style="position:fixed;bottom:20px;left:20px;z-index:1000;">
+      <button onclick="showDeploymentGuide()" 
+              style="background:var(--accent);color:white;border:none;padding:8px 16px;border-radius:20px;font-size:12px;cursor:pointer;box-shadow:var(--shadow);">
+        📱 移动端部署指南
+      </button>
+    </div>
+  `;
+  footer.appendChild(guideBtn);
+}, 1000);
+</script>
+</body>
+</html>
