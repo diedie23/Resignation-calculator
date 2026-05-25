@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#6366f1">
+<meta name="description" content="帮助你科学规划裸辞时机，计算离职所需资金和续航时间">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%236366f1'/><text x='50' y='68' font-size='45' text-anchor='middle' fill='white'>💰</text></svg>">
 <title>裸辞计划计算器</title>
 <style>
   :root {
@@ -42,14 +46,17 @@
     --card: #1a1a2e;
     --card2: #232340;
     --text: #e8e8f0;
-    --text2: #a0a0c0;
-    --text3: #6a6a8a;
+    --text2: #b0b0d0;
+    --text3: #8a8aaa;
     --border: #2a2a45;
     --accent-bg: rgba(99,102,241,0.15);
     --accent-bg2: rgba(99,102,241,0.25);
-    --green-bg: #052e16;
-    --orange-bg: #451a03;
-    --red-bg: #450a0a;
+    --green-bg: rgba(16,185,129,0.12);
+    --orange-bg: rgba(245,158,11,0.12);
+    --red-bg: rgba(239,68,68,0.12);
+    --green-bd: #34d399;
+    --orange-bd: #fbbf24;
+    --red-bd: #f87171;
     --shadow: 0 1px 3px rgba(0,0,0,0.2), 0 4px 12px rgba(0,0,0,0.3);
     --shadow-lg: 0 4px 24px rgba(0,0,0,0.4);
   }
@@ -150,6 +157,16 @@
     box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
   }
   .field input[type=number]:hover:not(:focus) { border-color: var(--border); }
+  .field input[type=number].input-warn {
+    border-color: var(--orange); background: var(--orange-bg);
+    box-shadow: 0 0 0 3px rgba(245,158,11,0.15);
+  }
+  .input-hint {
+    position: absolute; bottom: -18px; right: 0; font-size: 11px;
+    color: var(--orange); white-space: nowrap; font-weight: 500;
+    animation: fadeIn 0.2s ease;
+  }
+  .field-right { position: relative; }
   .field .unit { font-size: 12px; color: var(--text3); white-space: nowrap; font-weight: 500; }
 
   /* ── Expense groups ── */
@@ -262,9 +279,15 @@
   .total-row .tl { font-size: 14px; color: var(--text2); font-weight: 500; }
   .total-row .tv { font-size: 17px; font-weight: 800; color: var(--accent); }
 
-  /* ── Calc button ── */
+  /* ── Calc button (floating) ── */
+  .calc-btn-wrap {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 90;
+    padding: 12px 14px calc(env(safe-area-inset-bottom, 12px) + 12px);
+    background: linear-gradient(to top, var(--bg) 60%, transparent);
+    pointer-events: none;
+  }
   .calc-btn {
-    display: block; margin: 18px 14px 0; width: calc(100% - 28px);
+    display: block; width: 100%; pointer-events: auto;
     padding: 16px; background: var(--gradient); color: #fff; border: none;
     border-radius: var(--radius); font-size: 16px; font-weight: 700;
     cursor: pointer; letter-spacing: 0.04em;
@@ -280,12 +303,49 @@
   .calc-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(99,102,241,0.45); }
   .calc-btn:active { transform: scale(0.98) translateY(0); }
 
+  /* ── Empty state placeholder ── */
+  .empty-state {
+    background: var(--card); margin: 14px 14px 0; border-radius: var(--radius);
+    padding: 32px 20px; text-align: center; box-shadow: var(--shadow);
+    border: 2px dashed var(--border); position: relative; overflow: hidden;
+  }
+  .empty-state::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--gradient); opacity: 0.6;
+    animation: emptyShimmer 2s ease-in-out infinite;
+  }
+  @keyframes emptyShimmer {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.8; }
+  }
+  .empty-state .es-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-state .es-text { font-size: 14px; color: var(--text2); line-height: 1.7; }
+  .empty-state .es-hint { font-size: 12px; color: var(--text3); margin-top: 8px; }
+
   /* ── Result area ── */
   .result { margin: 14px 14px 0; display: none; animation: resultIn 0.5s ease; }
   @keyframes resultIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+
+  /* ── Share bar ── */
+  .share-bar {
+    display: flex; gap: 8px; margin-bottom: 12px; justify-content: flex-end;
+  }
+  .share-btn {
+    padding: 8px 14px; border-radius: 20px; border: 1.5px solid var(--border);
+    background: var(--card); color: var(--text2); font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: var(--transition); display: flex; align-items: center; gap: 4px;
+  }
+  .share-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+  .share-btn:active { transform: scale(0.95); }
   .verdict-card {
     border-radius: var(--radius); padding: 20px; margin-bottom: 12px;
     border: 2px solid; box-shadow: var(--shadow);
+    animation: verdictPulse 0.6s ease;
+  }
+  @keyframes verdictPulse {
+    0% { transform: scale(0.95); opacity: 0; }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); opacity: 1; }
   }
   .verdict-card .vi { font-size: 32px; margin-bottom: 8px; }
   .verdict-card .vt { font-size: 18px; font-weight: 800; margin-bottom: 6px; line-height: 1.4; }
@@ -297,8 +357,20 @@
     background: var(--card); border-radius: var(--radius-sm);
     padding: 14px; box-shadow: var(--shadow); transition: var(--transition);
     border: 1px solid var(--border);
+    animation: metricFadeIn 0.4s ease both;
+  }
+  .metric:nth-child(1) { animation-delay: 0s; }
+  .metric:nth-child(2) { animation-delay: 0.05s; }
+  .metric:nth-child(3) { animation-delay: 0.1s; }
+  .metric:nth-child(4) { animation-delay: 0.15s; }
+  .metric:nth-child(5) { animation-delay: 0.2s; }
+  .metric:nth-child(6) { animation-delay: 0.25s; }
+  @keyframes metricFadeIn {
+    from { opacity: 0; transform: translateY(10px) scale(0.95); }
+    to { opacity: 1; transform: none; }
   }
   .metric:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+  [data-theme="dark"] .metric:hover { box-shadow: 0 4px 20px rgba(99,102,241,0.15), 0 0 0 1px rgba(99,102,241,0.2); }
   .metric .ml { font-size: 11px; color: var(--text3); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
   .metric .mv { font-size: 18px; font-weight: 800; line-height: 1.2; word-break: break-all; }
   .metric .ms { font-size: 11px; color: var(--text3); margin-top: 4px; }
@@ -339,8 +411,17 @@
     margin-bottom: 12px; box-shadow: var(--shadow);
   }
   .progress-card .pc-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--text2); margin-bottom: 10px; font-weight: 500; }
-  .prog-bg { height: 12px; border-radius: 6px; background: var(--border); overflow: hidden; }
-  .prog-fill { height: 100%; border-radius: 6px; transition: width 0.6s ease; background: var(--gradient); }
+  .prog-bg { height: 12px; border-radius: 6px; background: var(--border); overflow: hidden; position: relative; }
+  .prog-fill { height: 100%; border-radius: 6px; transition: width 0.6s ease, background 0.4s ease; background: var(--gradient); position: relative; }
+  .prog-fill::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.25) 50%, transparent 100%);
+    animation: progShine 2s ease-in-out infinite;
+  }
+  @keyframes progShine {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
 
   /* ── Tips ── */
   .tips-card {
@@ -490,6 +571,11 @@
 <div class="toast" id="toast"></div>
 
 
+
+<!-- Floating calc button -->
+<div class="calc-btn-wrap" id="calc-btn-wrap">
+  <button class="calc-btn" id="floating-calc-btn" onclick="doCalc()">✨ 计算最佳离职时机</button>
+</div>
 
 <!-- Reset modal -->
 <div class="modal-overlay" id="reset-modal">
@@ -644,6 +730,8 @@
     <div class="section-title">🎯 离职目标</div>
     <div class="field"><label>离职后预计月支出</label><div class="field-right"><input type="number" id="quit_monthly" value="5000" min="0"><span class="unit">元/月</span></div></div>
     <div class="field"><label>希望空窗多久</label><div class="field-right"><input type="number" id="quit_months" value="6" min="1"><span class="unit">个月</span></div></div>
+    <div class="field"><label>月支出年增长率</label><div class="field-right"><input type="number" id="inflation0" value="0" min="0" max="30" step="0.1"><span class="unit">%</span></div></div>
+    <div class="field"><label>意外支出缓冲</label><div class="field-right"><input type="number" id="buffer0" value="0" min="0" max="50" step="1"><span class="unit">%</span></div></div>
     <div class="field"><label>应急储备底线</label><div class="field-right"><input type="number" id="emergency" value="20000" min="0"><span class="unit">元</span></div></div>
     <div class="field"><label>离职补偿预估（N+1）</label><div class="field-right"><input type="number" id="nplus1" value="0" min="0"><span class="unit">元</span></div></div>
   </div>
@@ -713,9 +801,18 @@
     </div>
   </div>
 
-  <button class="calc-btn" onclick="calcPlan()">✨ 计算最佳离职时机</button>
+  <!-- Empty state placeholder -->
+  <div class="empty-state" id="empty0">
+    <div class="es-icon">📊</div>
+    <div class="es-text">填写完成后点击底部按钮<br>查看你的离职规划分析</div>
+    <div class="es-hint">按 Enter 快速计算</div>
+  </div>
 
-  <div class="result" id="res0">
+  <div class="result" id="res0" style="margin-bottom:80px">
+    <div class="share-bar" id="share-bar0">
+      <button class="share-btn" onclick="copyResult(0)">📋 复制结果</button>
+      <button class="share-btn" onclick="shareResult(0)">📤 分享</button>
+    </div>
     <div id="v0" class="verdict-card"></div>
     <div class="metrics" id="cards0"></div>
     <div class="breakdown-card" id="bd0"></div>
@@ -733,7 +830,9 @@
 <div class="page" id="page1">
 
   <div class="section">
-    <div class="section-title">💰 离职时资产</div>
+    <div class="section-title" style="display:flex;justify-content:space-between;align-items:center;padding-right:16px;">💰 离职时资产
+      <button onclick="syncFromPage0()" style="font-size:12px;padding:4px 12px;border-radius:20px;border:1.5px solid var(--accent);background:var(--accent-bg);color:var(--accent);cursor:pointer;font-weight:600;transition:var(--transition);white-space:nowrap;" onmouseover="this.style.background='var(--accent)';this.style.color='#fff'" onmouseout="this.style.background='var(--accent-bg)';this.style.color='var(--accent)'">🔄 从规划页同步</button>
+    </div>
     <div class="field"><label>存款 / 现金</label><div class="field-right"><input type="number" id="s2" value="100000" min="0"><span class="unit">元</span></div></div>
     <div class="field"><label>可变现资产</label><div class="field-right"><input type="number" id="a2" value="0" min="0"><span class="unit">元</span></div></div>
     <div class="field"><label>离职补偿金</label><div class="field-right"><input type="number" id="c2" value="0" min="0"><span class="unit">元</span></div></div>
@@ -814,12 +913,23 @@
     <div class="section-title">📥 被动收入 &amp; 目标</div>
     <div class="field"><label>月均被动收入</label><div class="field-right"><input type="number" id="inc2" value="0" min="0"><span class="unit">元/月</span></div></div>
     <div class="field"><label>希望空窗多久</label><div class="field-right"><input type="number" id="tgt2" value="6" min="1"><span class="unit">个月</span></div></div>
+    <div class="field"><label>月支出年增长率</label><div class="field-right"><input type="number" id="inflation1" value="0" min="0" max="30" step="0.1"><span class="unit">%</span></div></div>
+    <div class="field"><label>意外支出缓冲</label><div class="field-right"><input type="number" id="buffer1" value="0" min="0" max="50" step="1"><span class="unit">%</span></div></div>
     <div class="field"><label>应急储备底线</label><div class="field-right"><input type="number" id="em2" value="20000" min="0"><span class="unit">元</span></div></div>
   </div>
 
-  <button class="calc-btn" onclick="calcSurvive()">✨ 计算续航时间</button>
+  <!-- Empty state placeholder -->
+  <div class="empty-state" id="empty1">
+    <div class="es-icon">⏱️</div>
+    <div class="es-text">填写离职时的资产和支出<br>计算你的资金续航时间</div>
+    <div class="es-hint">按 Enter 快速计算</div>
+  </div>
 
-  <div class="result" id="res1">
+  <div class="result" id="res1" style="margin-bottom:80px">
+    <div class="share-bar" id="share-bar1">
+      <button class="share-btn" onclick="copyResult(1)">📋 复制结果</button>
+      <button class="share-btn" onclick="shareResult(1)">📤 分享</button>
+    </div>
     <div id="v1" class="verdict-card"></div>
     <div class="metrics" id="cards1"></div>
     <div class="breakdown-card" id="bd1"></div>
@@ -869,7 +979,94 @@ function showToast(msg, duration = 2000) {
   setTimeout(() => t.classList.remove('show'), duration);
 }
 
+// ── Copy / Share result ───────────────────────────────────────────────
+function getResultText(page) {
+  const resEl = document.getElementById('res' + page);
+  if (!resEl) return '';
+  const verdict = resEl.querySelector('.verdict-card');
+  const metrics = resEl.querySelectorAll('.metric');
+  const tips = resEl.querySelectorAll('.tip-item span:last-child');
 
+  let text = '📊 裸辞计划计算器 - ' + (page === 0 ? '离职时机分析' : '续航时间分析') + '\n';
+  text += '━━━━━━━━━━━━━━━━━━━━\n';
+
+  // Verdict
+  if (verdict) {
+    const vt = verdict.querySelector('.vt');
+    const vd = verdict.querySelector('.vd');
+    if (vt) text += '\n' + vt.textContent + '\n';
+    if (vd) text += vd.textContent + '\n';
+  }
+
+  // Metrics
+  if (metrics.length > 0) {
+    text += '\n📈 关键指标：\n';
+    metrics.forEach(m => {
+      const label = m.querySelector('.ml')?.textContent || '';
+      const val = m.querySelector('.mv')?.textContent || '';
+      text += `  • ${label}：${val}\n`;
+    });
+  }
+
+  // Tips
+  if (tips.length > 0) {
+    text += '\n💡 建议：\n';
+    tips.forEach(t => {
+      text += `  • ${t.textContent}\n`;
+    });
+  }
+
+  text += '\n━━━━━━━━━━━━━━━━━━━━\n';
+  text += '🔗 https://diedie23.github.io/resignation-calculator/';
+  return text;
+}
+
+function copyResult(page) {
+  const text = getResultText(page);
+  if (!text) { showToast('⚠️ 请先计算结果'); return; }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('✅ 结果已复制到剪贴板');
+    }).catch(() => {
+      fallbackCopy(text);
+    });
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0';
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand('copy');
+    showToast('✅ 结果已复制到剪贴板');
+  } catch (e) {
+    showToast('❌ 复制失败，请手动复制');
+  }
+  document.body.removeChild(ta);
+}
+
+function shareResult(page) {
+  const text = getResultText(page);
+  if (!text) { showToast('⚠️ 请先计算结果'); return; }
+  if (navigator.share) {
+    navigator.share({
+      title: '裸辞计划计算器 - ' + (page === 0 ? '离职时机分析' : '续航分析'),
+      text: text,
+      url: 'https://diedie23.github.io/resignation-calculator/'
+    }).catch(() => {
+      // User cancelled or share failed, fallback to copy
+      copyResult(page);
+    });
+  } else {
+    // Fallback: copy to clipboard
+    copyResult(page);
+  }
+}
 
 // ── Reset ─────────────────────────────────────────────────────────────
 function showResetModal() { document.getElementById('reset-modal').classList.add('show'); }
@@ -938,6 +1135,94 @@ function toggleGrp(head, bodyId) {
   chev.classList.toggle('open', hidden);
 }
 
+// Smart collapse: default collapse all expense groups, expand only those with non-default values
+function smartCollapseGroups() {
+  const defaultVals0 = [3000, 300, 1500, 500, 300, 200, 200, 0, 100, 500, 300, 500, 200, 100, 0, 100, 200, 100];
+  const defaultVals1 = [3000, 300, 1200, 600, 200, 100, 100, 0, 100, 300, 500, 300, 200, 100, 200, 1200, 100, 200, 100];
+
+  // Page 0 expense groups
+  const grpIds0 = ['gi-housing', 'gi-food', 'gi-transport', 'gi-ent', 'gi-health', 'gi-other'];
+  let expIdx0 = 0;
+  grpIds0.forEach(gid => {
+    const body = document.getElementById(gid);
+    if (!body) return;
+    const inputs = body.querySelectorAll('input[type=number]');
+    let hasCustom = false;
+    inputs.forEach(inp => {
+      const val = parseFloat(inp.value) || 0;
+      const def = defaultVals0[expIdx0] !== undefined ? defaultVals0[expIdx0] : 0;
+      if (val !== def) hasCustom = true;
+      expIdx0++;
+    });
+    // Collapse if all values are default
+    if (!hasCustom) {
+      body.style.display = 'none';
+      const head = body.previousElementSibling;
+      if (head) {
+        const chev = head.querySelector('.group-chev');
+        if (chev) chev.classList.remove('open');
+      }
+    }
+  });
+
+  // Page 1 expense groups
+  const grpIds1 = ['gi2-h', 'gi2-f', 'gi2-t', 'gi2-e', 'gi2-he', 'gi2-o'];
+  let expIdx1 = 0;
+  grpIds1.forEach(gid => {
+    const body = document.getElementById(gid);
+    if (!body) return;
+    const inputs = body.querySelectorAll('input[type=number]');
+    let hasCustom = false;
+    inputs.forEach(inp => {
+      const val = parseFloat(inp.value) || 0;
+      const def = defaultVals1[expIdx1] !== undefined ? defaultVals1[expIdx1] : 0;
+      if (val !== def) hasCustom = true;
+      expIdx1++;
+    });
+    if (!hasCustom) {
+      body.style.display = 'none';
+      const head = body.previousElementSibling;
+      if (head) {
+        const chev = head.querySelector('.group-chev');
+        if (chev) chev.classList.remove('open');
+      }
+    }
+  });
+
+  // Also collapse extra income and tracker by default if no custom values
+  const extraBody = document.getElementById('extra-body');
+  if (extraBody) {
+    let hasExtra = false;
+    extraBody.querySelectorAll('input[type=number]').forEach(inp => {
+      if ((parseFloat(inp.value) || 0) !== 0) hasExtra = true;
+    });
+    if (!hasExtra) {
+      extraBody.style.display = 'none';
+      const head = document.getElementById('extra-toggle');
+      if (head) {
+        const chev = head.querySelector('.group-chev');
+        if (chev) chev.classList.remove('open');
+      }
+    }
+  }
+
+  const trackerBody = document.getElementById('tracker-body');
+  if (trackerBody) {
+    let hasTracker = false;
+    trackerBody.querySelectorAll('input[type=number]').forEach(inp => {
+      if ((parseFloat(inp.value) || 0) !== 0) hasTracker = true;
+    });
+    if (!hasTracker) {
+      trackerBody.style.display = 'none';
+      const head = trackerBody.previousElementSibling;
+      if (head) {
+        const chev = head.querySelector('.group-chev');
+        if (chev) chev.classList.remove('open');
+      }
+    }
+  }
+}
+
 // ── Progress tracker ──────────────────────────────────────────────────
 function getMonthlyTotal() {
   let t = 0;
@@ -981,6 +1266,7 @@ function updateProgress() {
     document.getElementById('ts-pct').textContent = pct + '%';
     const bar = document.getElementById('ts-bar');
     bar.style.width = pct + '%';
+    bar.style.background = pct >= 70 ? 'linear-gradient(135deg, #10b981 0%, #34d399 100%)' : pct >= 30 ? 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)' : 'linear-gradient(135deg, #ef4444 0%, #f87171 100%)';
     const cheers = [
       [0, '加油！每存一分都是向自由迈进一步 💪'],
       [20, '已完成 1/5，继续保持！✊'],
@@ -1091,10 +1377,79 @@ function getAvgIncome() {
   return (base * REMAIN_MONTHS + extraTotal) / REMAIN_MONTHS;
 }
 
+// ── Floating calc button ──────────────────────────────────────────────
+function doCalc() {
+  const activePage = document.querySelector('.page.active');
+  if (activePage?.id === 'page0') calcPlan();
+  else if (activePage?.id === 'page1') calcSurvive();
+}
+
+function updateCalcBtnText() {
+  const btn = document.getElementById('floating-calc-btn');
+  const activePage = document.querySelector('.page.active');
+  if (activePage?.id === 'page0') btn.textContent = '✨ 计算最佳离职时机';
+  else btn.textContent = '✨ 计算续航时间';
+}
+
 // ── Tab switching ─────────────────────────────────────────────────────
 function switchTab(i) {
   document.querySelectorAll('.tab').forEach((t, j) => t.classList.toggle('active', i === j));
   document.querySelectorAll('.page').forEach((p, j) => p.classList.toggle('active', i === j));
+  updateCalcBtnText();
+}
+
+// ── Sync Page0 → Page1 ───────────────────────────────────────────────
+function syncFromPage0() {
+  // Calculate projected savings at resignation time
+  const salary = getAvgIncome();
+  const savings = vn('savings');
+  const invest = vn('invest');
+  const debts = getDebts();
+  const nplus1 = vn('nplus1');
+  const oneTime = getOnetimeTotal();
+
+  // Calculate monthly net savings from Page0
+  const expInputs = document.querySelectorAll('.exp');
+  let totalExp = 0;
+  expInputs.forEach(i => totalExp += parseFloat(i.value) || 0);
+  const monthlySave = salary - totalExp - debts.monthly;
+
+  // Estimate: current savings + remaining months savings (if positive)
+  const projectedSavings = savings + (monthlySave > 0 ? monthlySave * REMAIN_MONTHS : 0) - oneTime;
+
+  // Sync to Page1 fields
+  document.getElementById('s2').value = Math.round(Math.max(0, projectedSavings));
+  document.getElementById('a2').value = Math.round(invest);
+  document.getElementById('c2').value = Math.round(nplus1);
+  document.getElementById('d2').value = Math.round(debts.balance);
+
+  // Also sync expense structure (proportionally reduce for post-resignation)
+  // Map Page0 expense groups to Page1 expense groups
+  const syncMap = [
+    { from: 'housing', to: 'h' },
+    { from: 'food', to: 'f' },
+    { from: 'transport', to: 't' },
+    { from: 'ent', to: 'e' },
+    { from: 'health', to: 'he' },
+    { from: 'other', to: 'o' }
+  ];
+
+  syncMap.forEach(({ from, to }) => {
+    const srcInputs = document.querySelectorAll(`.exp.${from}`);
+    const dstInputs = document.querySelectorAll(`.exp2.${to}`);
+    // Sync values with 85% factor (post-resignation typically lower)
+    const factor = (from === 'transport') ? 0.5 : (from === 'ent') ? 0.7 : 0.9;
+    srcInputs.forEach((src, i) => {
+      if (dstInputs[i]) {
+        dstInputs[i].value = Math.round((parseFloat(src.value) || 0) * factor);
+      }
+    });
+  });
+
+  // Update Page1 totals
+  updateTotals1();
+  scheduleSave();
+  showToast('✅ 已从规划页同步数据（支出按离职后比例调整）');
 }
 
 // ── Debt helpers ──────────────────────────────────────────────────────
@@ -1351,13 +1706,25 @@ function drawBurndown(canvasId, totalFund, monthlyBurn, months) {
   }
 }
 
+// ── Inflation helper: calculate total spending over N months with monthly growth ──
+function calcTotalWithInflation(monthlyBase, months, annualRate) {
+  if (annualRate <= 0 || months <= 0) return monthlyBase * months;
+  // Convert annual rate to monthly rate via compound growth
+  const monthlyRate = Math.pow(1 + annualRate / 100, 1 / 12) - 1;
+  // Geometric series sum: base * ((1+r)^N - 1) / r
+  const total = monthlyBase * (Math.pow(1 + monthlyRate, months) - 1) / monthlyRate;
+  return total;
+}
+
 // ── Page 0 Calculate ──────────────────────────────────────────────────
-function calcPlan() {
+function calcPlan(silent) {
   const salary = getAvgIncome();
   const savings = vn('savings'), invest = vn('invest') * 0.8;
   const debts = getDebts();
   const qm = vn('quit_monthly'), qmo = vn('quit_months');
   const em = vn('emergency'), np = vn('nplus1');
+  const inflationRate = vn('inflation0'); // annual % growth of expenses
+  const bufferPct = vn('buffer0'); // unexpected expense buffer %
 
   // Validation
   if (salary <= 0) { showToast('⚠️ 请填写税后月薪'); return; }
@@ -1370,21 +1737,30 @@ function calcPlan() {
   const save = salary - totalExp;
   const netAssets = savings + invest - debts.balance;
   const oneTime = getOnetimeTotal();
-  const targetFund = qm * qmo + em + debts.balance;
+
+  // Calculate total spending during gap period with inflation
+  const rawGapSpending = calcTotalWithInflation(qm, qmo, inflationRate);
+  // Apply buffer coefficient
+  const gapSpending = rawGapSpending * (1 + bufferPct / 100);
+
+  const targetFund = gapSpending + em + debts.balance;
   const avail = netAssets + np - em - oneTime;
   const stillNeed = Math.max(0, targetFund - (savings + invest + np - oneTime));
   const mToQuit = save > 0 ? Math.ceil(stillNeed / save) : 9999;
-  const canNow = avail >= qm * qmo;
+  const canNow = avail >= gapSpending;
 
   document.getElementById('res0').style.display = 'block';
+  document.getElementById('empty0').style.display = 'none';
 
   // Verdict
   const v0 = document.getElementById('v0');
   let vtitle, vdesc, vbg, vbo;
+  const inflationNote = inflationRate > 0 ? `（含通胀${inflationRate}%）` : '';
+  const bufferNote = bufferPct > 0 ? `（含${bufferPct}%缓冲）` : '';
   if (canNow) {
     vbg = 'var(--green-bg)'; vbo = 'var(--green-bd)';
     vtitle = '✅ 现在就可以考虑提离职！';
-    vdesc = `扣除负债和应急储备后，还有 ${fmt(avail)} 元，足以支撑 ${qmo} 个月空窗期。`;
+    vdesc = `扣除负债和应急储备后，还有 ${fmt(avail)} 元，足以支撑 ${qmo} 个月空窗期${inflationNote}${bufferNote}。`;
   } else if (save <= 0) {
     vbg = 'var(--red-bg)'; vbo = 'var(--red-bd)';
     vtitle = '🚨 目前月光，先控制支出';
@@ -1393,16 +1769,18 @@ function calcPlan() {
     vbg = 'var(--orange-bg)'; vbo = 'var(--orange-bd)';
     vtitle = `🗓️ 预计再存 ${mToQuit} 个月后可以离职`;
     const d = new Date(); d.setMonth(d.getMonth() + mToQuit);
-    vdesc = `按每月净存 ${fmt(save)} 元，预计 ${d.getFullYear()} 年 ${d.getMonth() + 1} 月达到条件（还需积累 ${fmt(stillNeed)} 元）。`;
+    vdesc = `按每月净存 ${fmt(save)} 元，预计 ${d.getFullYear()} 年 ${d.getMonth() + 1} 月达到条件（还需积累 ${fmt(stillNeed)} 元）${inflationNote}${bufferNote}。`;
   }
   v0.style.cssText = `background:${vbg};border-color:${vbo};`;
   v0.innerHTML = `<div class="vt">${vtitle}</div><div class="vd">${vdesc}</div>`;
 
   // Metrics
+  const targetDesc = (inflationRate > 0 || bufferPct > 0) ? '含通胀/缓冲' : '空窗费+应急+负债';
   document.getElementById('cards0').innerHTML = `
     <div class="metric"><div class="ml">净资产</div><div class="mv" style="color:${netAssets >= 0 ? 'var(--green)' : 'var(--red)'}">${fmt(netAssets)}元</div><div class="ms">资产 - 负债</div></div>
     <div class="metric"><div class="ml">月净结余</div><div class="mv" style="color:${save >= 0 ? 'var(--green)' : 'var(--red)'}">${fmt(save)}元</div><div class="ms">薪资 - 全部支出</div></div>
-    <div class="metric"><div class="ml">离职目标金额</div><div class="mv">${fmt(targetFund)}元</div><div class="ms">空窗费+应急底线+负债</div></div>
+    <div class="metric"><div class="ml">离职目标金额</div><div class="mv">${fmt(targetFund)}元</div><div class="ms">${targetDesc}</div></div>
+    <div class="metric"><div class="ml">空窗期总花费</div><div class="mv">${fmt(gapSpending)}元</div><div class="ms">${qmo}个月${inflationRate > 0 ? '(含通胀)' : ''}${bufferPct > 0 ? '(含缓冲)' : ''}</div></div>
     <div class="metric"><div class="ml">负债总额</div><div class="mv" style="color:${debts.balance > 0 ? 'var(--red)' : 'var(--text)'}">${fmt(debts.balance)}元</div><div class="ms">月还 ${fmt(debts.monthly)} 元</div></div>
     <div class="metric"><div class="ml">一次性支出</div><div class="mv" style="color:${oneTime > 0 ? 'var(--red)' : 'var(--text3)'}">${oneTime > 0 ? fmt(oneTime) + '元' : '无'}</div><div class="ms">直接扣除可用资金</div></div>
     <div class="metric"><div class="ml">还差多少</div><div class="mv" style="color:${stillNeed <= 0 ? 'var(--green)' : 'var(--red)'}">${stillNeed <= 0 ? '已达标' : '差' + fmt(stillNeed) + '元'}</div><div class="ms">距离目标</div></div>
@@ -1414,11 +1792,12 @@ function calcPlan() {
   if (debts.monthly > 0) bdItems.push({ icon: '💳', label: '负债还款', val: debts.monthly });
   renderBreakdown('bd0', bdItems, totalExp);
 
-  // Burn-down chart
+  // Burn-down chart (use average monthly burn for visualization)
+  const avgMonthlyBurn = qmo > 0 ? gapSpending / qmo : qm;
   if (canNow || save > 0) {
     const bd0 = document.getElementById('burndown0');
     bd0.style.display = '';
-    setTimeout(() => drawBurndown('burndown-canvas0', avail + qm * qmo, qm, qmo + 3), 100);
+    setTimeout(() => drawBurndown('burndown-canvas0', avail + gapSpending, avgMonthlyBurn, qmo + 3), 100);
   }
 
   // Timeline
@@ -1427,14 +1806,15 @@ function calcPlan() {
     let html = '<div class="tc-title">📅 积累进度预测</div>';
     [3, 6, 12].forEach(m => {
       const proj = Math.max(0, avail) + save * m;
-      const ok = proj >= qm * qmo;
+      const ok = proj >= gapSpending;
       html += `<div class="tl-row"><div class="tl-dot" style="background:${ok ? 'var(--green)' : 'var(--text3)'}"></div><div class="tl-label">再存 ${m} 个月</div><div class="tl-val">${fmt(proj)} 元 ${ok ? '✅' : ''}</div></div>`;
     });
     tl.innerHTML = html;
 
-    const pct = Math.min(100, Math.round(Math.max(0, avail) / (qm * qmo) * 100));
+    const pct = Math.min(100, Math.round(Math.max(0, avail) / gapSpending * 100));
     const p0 = document.getElementById('prog0'); p0.style.display = '';
-    p0.innerHTML = `<div class="pc-row"><span>离职目标达成进度</span><span>${pct}%</span></div><div class="prog-bg"><div class="prog-fill" style="width:${pct}%;"></div></div>`;
+    const progCol0 = pct >= 70 ? 'var(--gradient2)' : pct >= 30 ? 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)' : 'linear-gradient(135deg, #ef4444 0%, #f87171 100%)';
+    p0.innerHTML = `<div class="pc-row"><span>离职目标达成进度</span><span>${pct}%</span></div><div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${progCol0}"></div></div>`;
   } else {
     document.getElementById('tl0').style.display = 'none';
     document.getElementById('prog0').style.display = 'none';
@@ -1451,13 +1831,15 @@ function calcPlan() {
   document.getElementById('tips0').innerHTML = '<div class="tc-title">💡 个性化建议</div>' +
     tipList.map(t => `<div class="tip-item"><span class="tip-arrow">›</span><span>${t}</span></div>`).join('');
 
-  document.getElementById('res0').scrollIntoView({ behavior: 'smooth', block: 'start' });
   setTrackerTarget(targetFund);
-  showToast('✅ 计算完成');
+  if (!silent) {
+    document.getElementById('res0').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    showToast('✅ 计算完成');
+  }
 }
 
 // ── Page 1 Calculate ──────────────────────────────────────────────────
-function calcSurvive() {
+function calcSurvive(silent) {
   const s = vn('s2'), a = vn('a2'), c = vn('c2'), d = vn('d2');
 
   // Validation
@@ -1467,13 +1849,38 @@ function calcSurvive() {
   Object.keys(grps1).forEach(g => grpTotals2[g] = sumClass2(g));
   const monthly = Object.values(grpTotals2).reduce((a, b) => a + b, 0);
   const income = vn('inc2'), tgt = vn('tgt2'), em = vn('em2');
+  const inflationRate1 = vn('inflation1'); // annual % growth
+  const bufferPct1 = vn('buffer1'); // unexpected buffer %
   const netMo = Math.max(0, monthly - income);
   const total = s + a + c - d, avail = total - em;
-  const months = netMo > 0 ? Math.floor(avail / netMo) : 999;
-  const canAchieve = avail >= netMo * tgt;
+
+  // Calculate months with inflation: iteratively determine how many months funds last
+  let months;
+  if (netMo <= 0) {
+    months = 999;
+  } else if (inflationRate1 <= 0 && bufferPct1 <= 0) {
+    months = Math.floor(avail / netMo);
+  } else {
+    // Iterative calculation: each month spending grows with inflation + buffer
+    const monthlyRate = inflationRate1 > 0 ? Math.pow(1 + inflationRate1 / 100, 1 / 12) - 1 : 0;
+    const bufferMult = 1 + bufferPct1 / 100;
+    let remaining = avail;
+    months = 0;
+    while (remaining > 0 && months < 999) {
+      const thisMonthSpend = netMo * Math.pow(1 + monthlyRate, months) * bufferMult;
+      remaining -= thisMonthSpend;
+      if (remaining >= 0) months++;
+      else break;
+    }
+  }
+
+  // Calculate target spending with inflation
+  const tgtSpending = calcTotalWithInflation(netMo, tgt, inflationRate1) * (1 + bufferPct1 / 100);
+  const canAchieve = avail >= tgtSpending;
   const pct = Math.min(100, Math.round(tgt / Math.max(months, 0.01) * 100));
 
   document.getElementById('res1').style.display = 'block';
+  document.getElementById('empty1').style.display = 'none';
 
   const v1 = document.getElementById('v1');
   let vbg, vbo, vi, vt, vd;
@@ -1489,8 +1896,8 @@ function calcSurvive() {
     <div class="metric"><div class="ml">可动用资金</div><div class="mv">${fmt(avail)}元</div><div class="ms">扣负债+应急后</div></div>
     <div class="metric"><div class="ml">月净支出</div><div class="mv">${fmt(netMo)}元</div><div class="ms">支出 - 被动收入</div></div>
     <div class="metric"><div class="ml">最长续航</div><div class="mv">${months >= 999 ? '∞' : months + '个月'}</div><div class="ms">${months >= 999 ? '已自由' : Math.floor(months / 12) + '年' + months % 12 + '月'}</div></div>
-    <div class="metric"><div class="ml">目标花费</div><div class="mv">${fmt(netMo * tgt)}元</div><div class="ms">${tgt}个月所需</div></div>
-    <div class="metric"><div class="ml">资金缺口</div><div class="mv" style="color:${canAchieve ? 'var(--green)' : 'var(--red)'}">${canAchieve ? '无缺口' : '差' + fmt(netMo * tgt - avail) + '元'}</div><div class="ms">${canAchieve ? '目标可达成' : '需补充'}</div></div>
+    <div class="metric"><div class="ml">目标花费</div><div class="mv">${fmt(tgtSpending)}元</div><div class="ms">${tgt}个月${inflationRate1 > 0 ? '(含通胀)' : ''}${bufferPct1 > 0 ? '(含缓冲)' : ''}</div></div>
+    <div class="metric"><div class="ml">资金缺口</div><div class="mv" style="color:${canAchieve ? 'var(--green)' : 'var(--red)'}">${canAchieve ? '无缺口' : '差' + fmt(tgtSpending - avail) + '元'}</div><div class="ms">${canAchieve ? '目标可达成' : '需补充'}</div></div>
     <div class="metric"><div class="ml">月支出合计</div><div class="mv">${fmt(monthly)}元</div><div class="ms">所有类别之和</div></div>
   `;
 
@@ -1512,12 +1919,14 @@ function calcSurvive() {
   if (income === 0) tipList.push('暂无被动收入——哪怕每月 500 元副业，也能明显延长续航时间。');
   if (d > 0) tipList.push(`负债 ${fmt(d)} 元已从资产扣除，建议离职前尽量还清。`);
   tipList.push('以灵活就业身份缴纳社保每月约 1000–2000 元，已包含在你的支出里了吗？');
-  if (months < tgt) tipList.push(`缺口 ${fmt(netMo * tgt - avail)} 元，考虑缩减「娱乐&社交」或「旅行」支出。`);
+  if (months < tgt) tipList.push(`缺口 ${fmt(tgtSpending - avail)} 元，考虑缩减「娱乐&社交」或「旅行」支出。`);
   document.getElementById('tips1').innerHTML = '<div class="tc-title">💡 建议</div>' +
     tipList.map(t => `<div class="tip-item"><span class="tip-arrow">›</span><span>${t}</span></div>`).join('');
 
-  document.getElementById('res1').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  showToast('✅ 计算完成');
+  if (!silent) {
+    document.getElementById('res1').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    showToast('✅ 计算完成');
+  }
 }
 
 // ── localStorage persistence ──────────────────────────────────────────
@@ -1537,9 +1946,13 @@ function saveData() {
       quit_months: vn('quit_months'),
       emergency: vn('emergency'),
       nplus1: vn('nplus1'),
+      inflation0: vn('inflation0'),
+      buffer0: vn('buffer0'),
       // Page 1
       s2: vn('s2'), a2: vn('a2'), c2: vn('c2'), d2: vn('d2'),
       inc2: vn('inc2'), tgt2: vn('tgt2'), em2: vn('em2'),
+      inflation1: vn('inflation1'),
+      buffer1: vn('buffer1'),
       // Extra income
       extras: {},
       // Tracker
@@ -1594,7 +2007,7 @@ function loadData() {
     const data = JSON.parse(raw);
 
     // Simple fields
-    const fields = ['salary', 'savings', 'invest', 'quit_monthly', 'quit_months', 'emergency', 'nplus1', 's2', 'a2', 'c2', 'd2', 'inc2', 'tgt2', 'em2'];
+    const fields = ['salary', 'savings', 'invest', 'quit_monthly', 'quit_months', 'emergency', 'nplus1', 'inflation0', 'buffer0', 's2', 'a2', 'c2', 'd2', 'inc2', 'tgt2', 'em2', 'inflation1', 'buffer1'];
     fields.forEach(id => {
       const el = document.getElementById(id);
       if (el && data[id] !== undefined) el.value = data[id];
@@ -1657,7 +2070,7 @@ document.addEventListener('DOMContentLoaded', function () {
             3. 或使用电脑浏览器打开本地文件
           </p>
           <div style="display:flex;gap:10px;justify-content:center;margin-top:20px;">
-            <button onclick="window.open('https://yourusername.github.io/resign-calculator/', '_blank')" 
+            <button onclick="window.open('https://diedie23.github.io/resignation-calculator/', '_blank')" 
                     style="background:var(--green);color:white;border:none;padding:10px 20px;border-radius:var(--radius-sm);cursor:pointer;flex:1;">
               访问在线版本
             </button>
@@ -1679,6 +2092,11 @@ document.addEventListener('DOMContentLoaded', function () {
     addDbt('花呗', 5000, 'lump', 0);
   }
 
+  // Add inputmode="decimal" to all number inputs for better mobile keyboard
+  document.querySelectorAll('input[type=number]').forEach(inp => {
+    inp.setAttribute('inputmode', 'decimal');
+  });
+
   // Bind events
   document.querySelectorAll('.exp').forEach(i => i.addEventListener('input', updateTotals0));
   document.querySelectorAll('.exp2').forEach(i => i.addEventListener('input', updateTotals1));
@@ -1689,12 +2107,16 @@ document.addEventListener('DOMContentLoaded', function () {
   updateTotals1();
   updateProgress();
 
+  // Smart collapse: collapse all groups, then expand those with non-default values
+  smartCollapseGroups();
+
   if (loaded) {
     setTimeout(() => showToast('📂 已恢复上次保存的数据'), 300);
   }
 });
 
 // Auto-update progress when main fields change
+let _reCalcTimer = null;
 document.addEventListener('input', function (e) {
   const ids = ['savings', 'invest'];
   if (ids.includes(e.target?.id) || e.target?.closest('.debt-card')) {
@@ -1702,14 +2124,54 @@ document.addEventListener('input', function (e) {
   }
   // Auto-save on any input
   scheduleSave();
+
+  // Real-time recalculation: if result is already visible, auto-recalculate after debounce
+  if (e.target?.matches('input[type=number]')) {
+    // Input validation hint
+    validateInput(e.target);
+    // Debounced auto-recalculate
+    if (_reCalcTimer) clearTimeout(_reCalcTimer);
+    _reCalcTimer = setTimeout(() => {
+      const activePage = document.querySelector('.page.active');
+      if (activePage?.id === 'page0' && document.getElementById('res0').style.display === 'block') {
+        calcPlan(true); // silent mode
+      } else if (activePage?.id === 'page1' && document.getElementById('res1').style.display === 'block') {
+        calcSurvive(true); // silent mode
+      }
+    }, 600);
+  }
 });
+
+// Input validation: warn on unreasonable values
+function validateInput(input) {
+  const val = parseFloat(input.value) || 0;
+  const existingHint = input.parentElement?.querySelector('.input-hint');
+  if (existingHint) existingHint.remove();
+  input.classList.remove('input-warn');
+
+  if (val < 0) {
+    input.classList.add('input-warn');
+    showInputHint(input, '不能为负数');
+    input.value = 0;
+  } else if (val > 9999999) {
+    input.classList.add('input-warn');
+    showInputHint(input, '数值过大，请确认');
+  }
+}
+
+function showInputHint(input, msg) {
+  const hint = document.createElement('span');
+  hint.className = 'input-hint';
+  hint.textContent = msg;
+  const parent = input.parentElement;
+  if (parent) parent.appendChild(hint);
+  setTimeout(() => hint.remove(), 2500);
+}
 
 // Keyboard shortcut: Enter to calculate
 document.addEventListener('keydown', function (e) {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    const activePage = document.querySelector('.page.active');
-    if (activePage?.id === 'page0') calcPlan();
-    else if (activePage?.id === 'page1') calcSurvive();
+  if (e.key === 'Enter' && !e.shiftKey && !e.target.matches('input[type=text]')) {
+    doCalc();
   }
 });
 
@@ -1725,7 +2187,7 @@ function showDeploymentGuide() {
           <p style="color:var(--text2);margin-bottom:10px;">
             访问已部署的在线版本，支持移动端和书签功能：
           </p>
-          <button onclick="window.open('https://yourusername.github.io/resign-calculator/', '_blank')" 
+          <button onclick="window.open('https://diedie23.github.io/resignation-calculator/', '_blank')" 
                   style="background:var(--green);color:white;border:none;padding:10px 20px;border-radius:var(--radius-sm);cursor:pointer;width:100%;margin-bottom:10px;">
             访问在线版本
           </button>
@@ -1759,23 +2221,36 @@ function showDeploymentGuide() {
   document.body.insertAdjacentHTML('beforeend', guideHtml);
 }
 
-// Add deployment guide button to footer if needed
-// This can be triggered manually or based on certain conditions
+// Register Service Worker for offline support and PWA
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').then((registration) => {
+      console.log('[App] SW registered, scope:', registration.scope);
+      // Check for updates periodically
+      setInterval(() => registration.update(), 60 * 60 * 1000); // every hour
+      // Listen for new SW available
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        if (newWorker) {
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'activated' && navigator.serviceWorker.controller) {
+              showToast('🔄 应用已更新，刷新页面即可使用新版本');
+            }
+          });
+        }
+      });
+    }).catch((err) => {
+      console.warn('[App] SW registration failed:', err);
+    });
+  });
+}
 
-// Add a small deployment guide button in the footer
-setTimeout(() => {
-  const footer = document.querySelector('footer') || document.body;
-  const guideBtn = document.createElement('div');
-  guideBtn.innerHTML = `
-    <div style="position:fixed;bottom:20px;left:20px;z-index:1000;">
-      <button onclick="showDeploymentGuide()" 
-              style="background:var(--accent);color:white;border:none;padding:8px 16px;border-radius:20px;font-size:12px;cursor:pointer;box-shadow:var(--shadow);">
-        📱 移动端部署指南
-      </button>
-    </div>
-  `;
-  footer.appendChild(guideBtn);
-}, 1000);
+// Detect if app is installed as PWA
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+});
 </script>
 </body>
 </html>

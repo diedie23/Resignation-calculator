@@ -1,0 +1,62 @@
+﻿{
+  "name": "裸辞计划计算器",
+  "short_name": "裸辞计算器",
+  "description": "帮助你科学规划裸辞时机，计算离职所需资金和续航时间",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "background_color": "#f0f2f5",
+  "theme_color": "#6366f1",
+  "orientation": "any",
+  "scope": "./",
+  "lang": "zh-CN",
+  "categories": ["finance", "productivity"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%236366f1'/><text x='50' y='68' font-size='45' text-anchor='middle' fill='white'>💰</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%236366f1'/><text x='50' y='68' font-size='45' text-anchor='middle' fill='white'>💰</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%236366f1'/><text x='50' y='68' font-size='45' text-anchor='middle' fill='white'>💰</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "计算离职时机",
+      "short_name": "离职时机",
+      "description": "计算最佳离职时间点",
+      "url": "./index.html",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2310b981'/><text x='50' y='68' font-size='45' text-anchor='middle' fill='white'>📅</text></svg>",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "续航计算",
+      "short_name": "续航",
+      "description": "计算离职后资金能撑多久",
+      "url": "./index.html#survive",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23f59e0b'/><text x='50' y='68' font-size='45' text-anchor='middle' fill='white'>⏱️</text></svg>",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ]
+}
