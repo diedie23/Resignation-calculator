@@ -202,6 +202,30 @@
   .group-body .field { background: var(--card2); padding-left: 54px; }
   .group-body .field input[type=number] { background: var(--card); }
 
+  /* ── Expense mode toggle ── */
+  .exp-mode-toggle {
+    display: flex; gap: 0; padding: 12px 16px 8px; background: var(--card);
+  }
+  .exp-mode-btn {
+    flex: 1; padding: 8px 12px; border: 1.5px solid var(--border); background: var(--card);
+    font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text2);
+    transition: all 0.2s; outline: none;
+  }
+  .exp-mode-btn:first-child { border-radius: 8px 0 0 8px; }
+  .exp-mode-btn:last-child { border-radius: 0 8px 8px 0; border-left: none; }
+  .exp-mode-btn.active {
+    background: var(--accent); color: #fff; border-color: var(--accent);
+  }
+  .exp-mode-btn:not(.active):hover { background: var(--accent-bg); }
+  .exp-quick-mode { padding: 0; background: var(--card); }
+  .exp-quick-hint {
+    padding: 10px 16px 4px; font-size: 12px; color: var(--text3); font-weight: 500;
+  }
+  .exp-quick-mode .field label { display: flex; flex-direction: column; gap: 2px; }
+  .exp-quick-mode .field label .quick-sub {
+    font-size: 11px; color: var(--text3); font-weight: 400;
+  }
+
   /* ── Debt rows ── */
   .debt-card {
     border-top: 0.5px solid var(--border); padding: 14px 16px;
@@ -648,6 +672,24 @@
   <div class="group-wrap" id="grp-wrap">
     <div class="section-title" style="border-bottom:0.5px solid var(--border)">📤 在职月支出</div>
 
+    <!-- Mode toggle -->
+    <div class="exp-mode-toggle">
+      <button class="exp-mode-btn active" id="exp-mode-quick" onclick="switchExpMode('quick')">⚡ 快速填写</button>
+      <button class="exp-mode-btn" id="exp-mode-detail" onclick="switchExpMode('detail')">📋 详细分类</button>
+    </div>
+
+    <!-- Quick mode -->
+    <div class="exp-quick-mode" id="exp-quick-panel">
+      <div class="exp-quick-hint">只需填写 4 个数字，快速估算月支出</div>
+      <div class="field"><label>🏠 固定支出<span class="quick-sub">房租/房贷/水电/车贷</span></label><div class="field-right"><input type="number" id="quick-fixed" value="3300" min="0" oninput="onQuickInput()"><span class="unit">元/月</span></div></div>
+      <div class="field"><label>🍜 生活支出<span class="quick-sub">吃喝/交通/日用</span></label><div class="field-right"><input type="number" id="quick-living" value="2700" min="0" oninput="onQuickInput()"><span class="unit">元/月</span></div></div>
+      <div class="field"><label>🎮 弹性支出<span class="quick-sub">娱乐/社交/购物/旅行</span></label><div class="field-right"><input type="number" id="quick-flex" value="1400" min="0" oninput="onQuickInput()"><span class="unit">元/月</span></div></div>
+      <div class="field"><label>📦 其他支出<span class="quick-sub">话费/人情/健身/学习</span></label><div class="field-right"><input type="number" id="quick-other" value="700" min="0" oninput="onQuickInput()"><span class="unit">元/月</span></div></div>
+    </div>
+
+    <!-- Detail mode (original groups) -->
+    <div class="exp-detail-mode" id="exp-detail-panel" style="display:none">
+
     <div class="group-head" onclick="toggleGrp(this,'gi-housing')">
       <span class="group-icon">🏠</span><span class="group-name">住房</span>
       <span class="group-sum" id="gs-housing">¥0</span><span class="group-chev open">▾</span>
@@ -707,6 +749,8 @@
       <div class="field"><label>人情 / 礼金</label><div class="field-right"><input type="number" class="exp other" value="200" min="0"><span class="unit">元/月</span></div></div>
       <div class="field"><label>其他杂费</label><div class="field-right"><input type="number" class="exp other" value="100" min="0"><span class="unit">元/月</span></div></div>
     </div>
+
+    </div><!-- end exp-detail-panel -->
 
     <div class="total-row">
       <span class="tl">在职月支出合计</span>
@@ -1348,9 +1392,7 @@ function updateIncome() {
   const avg = (base * REMAIN_MONTHS + extraTotal) / REMAIN_MONTHS;
   document.getElementById('is-avg').textContent = '¥' + Math.round(avg).toLocaleString();
 
-  const expInputs = document.querySelectorAll('.exp');
-  let totalExp = 0;
-  expInputs.forEach(i => totalExp += parseFloat(i.value) || 0);
+  let totalExp = getExpTotal0();
   const debts = getDebts();
   const netSave = avg - totalExp - debts.monthly;
   const saveEl = document.getElementById('is-save');
@@ -1409,9 +1451,7 @@ function syncFromPage0() {
   const oneTime = getOnetimeTotal();
 
   // Calculate monthly net savings from Page0
-  const expInputs = document.querySelectorAll('.exp');
-  let totalExp = 0;
-  expInputs.forEach(i => totalExp += parseFloat(i.value) || 0);
+  let totalExp = getExpTotal0();
   const monthlySave = salary - totalExp - debts.monthly;
 
   // Estimate: current savings + remaining months savings (if positive)
@@ -1540,9 +1580,132 @@ const grpNames1 = { h: '住房', f: '饮食', t: '交通', e: '娱乐&社交', h
 function sumClass(cls) { let t = 0; document.querySelectorAll('.exp.' + cls).forEach(i => t += parseFloat(i.value) || 0); return t; }
 function sumClass2(cls) { let t = 0; document.querySelectorAll('.exp2.' + cls).forEach(i => t += parseFloat(i.value) || 0); return t; }
 
+// ── Expense mode toggle (quick / detail) ──
+let expMode0 = 'quick'; // default to quick mode
+
+function switchExpMode(mode) {
+  expMode0 = mode;
+  document.getElementById('exp-mode-quick').classList.toggle('active', mode === 'quick');
+  document.getElementById('exp-mode-detail').classList.toggle('active', mode === 'detail');
+  document.getElementById('exp-quick-panel').style.display = mode === 'quick' ? '' : 'none';
+  document.getElementById('exp-detail-panel').style.display = mode === 'detail' ? '' : 'none';
+  if (mode === 'detail') {
+    // Sync quick values to detail inputs (distribute proportionally)
+    syncQuickToDetail();
+  } else {
+    // Sync detail values to quick inputs
+    syncDetailToQuick();
+  }
+  updateTotals0();
+}
+
+function syncDetailToQuick() {
+  const fixed = sumClass('housing');
+  const living = sumClass('food') + sumClass('transport');
+  const flex = sumClass('ent');
+  const other = sumClass('health') + sumClass('other');
+  document.getElementById('quick-fixed').value = Math.round(fixed);
+  document.getElementById('quick-living').value = Math.round(living);
+  document.getElementById('quick-flex').value = Math.round(flex);
+  document.getElementById('quick-other').value = Math.round(other);
+}
+
+function syncQuickToDetail() {
+  // When switching to detail, update detail inputs proportionally based on quick values
+  const quickFixed = parseFloat(document.getElementById('quick-fixed').value) || 0;
+  const quickLiving = parseFloat(document.getElementById('quick-living').value) || 0;
+  const quickFlex = parseFloat(document.getElementById('quick-flex').value) || 0;
+  const quickOther = parseFloat(document.getElementById('quick-other').value) || 0;
+
+  // Distribute fixed: housing group
+  distributeToGroup('housing', quickFixed);
+  // Distribute living: food + transport
+  const foodTotal = sumClass('food');
+  const transportTotal = sumClass('transport');
+  const livingOld = foodTotal + transportTotal;
+  if (livingOld > 0) {
+    const ratio = quickLiving / livingOld;
+    scaleGroup('food', ratio);
+    scaleGroup('transport', ratio);
+  } else {
+    // Set food to 70%, transport to 30%
+    setGroupTotal('food', Math.round(quickLiving * 0.7));
+    setGroupTotal('transport', Math.round(quickLiving * 0.3));
+  }
+  // Distribute flex: ent group
+  distributeToGroup('ent', quickFlex);
+  // Distribute other: health + other
+  const healthTotal = sumClass('health');
+  const otherTotal = sumClass('other');
+  const otherOld = healthTotal + otherTotal;
+  if (otherOld > 0) {
+    const ratio = quickOther / otherOld;
+    scaleGroup('health', ratio);
+    scaleGroup('other', ratio);
+  } else {
+    setGroupTotal('health', Math.round(quickOther * 0.5));
+    setGroupTotal('other', Math.round(quickOther * 0.5));
+  }
+}
+
+function distributeToGroup(cls, newTotal) {
+  const inputs = document.querySelectorAll('.exp.' + cls);
+  const oldTotal = sumClass(cls);
+  if (oldTotal > 0) {
+    const ratio = newTotal / oldTotal;
+    inputs.forEach(i => { i.value = Math.round((parseFloat(i.value) || 0) * ratio); });
+  } else if (inputs.length > 0) {
+    // Distribute evenly
+    const each = Math.round(newTotal / inputs.length);
+    inputs.forEach((i, idx) => { i.value = idx === 0 ? newTotal - each * (inputs.length - 1) : each; });
+  }
+}
+
+function scaleGroup(cls, ratio) {
+  document.querySelectorAll('.exp.' + cls).forEach(i => {
+    i.value = Math.round((parseFloat(i.value) || 0) * ratio);
+  });
+}
+
+function setGroupTotal(cls, total) {
+  const inputs = document.querySelectorAll('.exp.' + cls);
+  if (inputs.length > 0) {
+    const each = Math.round(total / inputs.length);
+    inputs.forEach((i, idx) => { i.value = idx === 0 ? total - each * (inputs.length - 1) : each; });
+  }
+}
+
+function onQuickInput() {
+  updateTotals0();
+  updateIncome();
+  updateProgress();
+}
+
+function getExpTotal0() {
+  if (expMode0 === 'quick') {
+    return (parseFloat(document.getElementById('quick-fixed').value) || 0)
+      + (parseFloat(document.getElementById('quick-living').value) || 0)
+      + (parseFloat(document.getElementById('quick-flex').value) || 0)
+      + (parseFloat(document.getElementById('quick-other').value) || 0);
+  } else {
+    let total = 0;
+    Object.keys(grps0).forEach(g => { total += sumClass(g); });
+    return total;
+  }
+}
+
 function updateTotals0() {
   let total = 0;
-  Object.keys(grps0).forEach(g => { const s = sumClass(g); total += s; document.getElementById('gs-' + g).textContent = '¥' + Math.round(s).toLocaleString(); });
+  if (expMode0 === 'quick') {
+    total = getExpTotal0();
+    // Also update group sums for display consistency
+    Object.keys(grps0).forEach(g => {
+      const s = sumClass(g);
+      document.getElementById('gs-' + g).textContent = '¥' + Math.round(s).toLocaleString();
+    });
+  } else {
+    Object.keys(grps0).forEach(g => { const s = sumClass(g); total += s; document.getElementById('gs-' + g).textContent = '¥' + Math.round(s).toLocaleString(); });
+  }
   document.getElementById('total-exp0').textContent = '¥' + Math.round(total).toLocaleString();
   scheduleSave();
 }
@@ -1732,8 +1895,24 @@ function calcPlan(silent) {
   if (qmo <= 0) { showToast('⚠️ 请填写空窗期月数'); return; }
 
   const grpTotals = {};
-  Object.keys(grps0).forEach(g => grpTotals[g] = sumClass(g));
-  const totalExp = Object.values(grpTotals).reduce((a, b) => a + b, 0) + debts.monthly;
+  let totalExp;
+  if (expMode0 === 'quick') {
+    totalExp = getExpTotal0() + debts.monthly;
+    // For breakdown display, distribute quick values to groups
+    const quickFixed = parseFloat(document.getElementById('quick-fixed').value) || 0;
+    const quickLiving = parseFloat(document.getElementById('quick-living').value) || 0;
+    const quickFlex = parseFloat(document.getElementById('quick-flex').value) || 0;
+    const quickOther = parseFloat(document.getElementById('quick-other').value) || 0;
+    grpTotals['housing'] = quickFixed;
+    grpTotals['food'] = quickLiving * 0.6;
+    grpTotals['transport'] = quickLiving * 0.4;
+    grpTotals['ent'] = quickFlex;
+    grpTotals['health'] = quickOther * 0.5;
+    grpTotals['other'] = quickOther * 0.5;
+  } else {
+    Object.keys(grps0).forEach(g => grpTotals[g] = sumClass(g));
+    totalExp = Object.values(grpTotals).reduce((a, b) => a + b, 0) + debts.monthly;
+  }
   const save = salary - totalExp;
   const netAssets = savings + invest - debts.balance;
   const oneTime = getOnetimeTotal();
@@ -1957,6 +2136,12 @@ function saveData() {
       extras: {},
       // Tracker
       tracker: {},
+      // Expense mode
+      expMode0: expMode0,
+      quickFixed: parseFloat(document.getElementById('quick-fixed').value) || 0,
+      quickLiving: parseFloat(document.getElementById('quick-living').value) || 0,
+      quickFlex: parseFloat(document.getElementById('quick-flex').value) || 0,
+      quickOther: parseFloat(document.getElementById('quick-other').value) || 0,
       // Expenses page 0
       exp0: [],
       // Expenses page 1
@@ -2029,7 +2214,7 @@ function loadData() {
       });
     }
 
-    // Expenses
+    // Expenses (restore values first before mode switch)
     if (data.exp0) {
       const exps = document.querySelectorAll('.exp');
       data.exp0.forEach((v, i) => { if (exps[i]) exps[i].value = v; });
@@ -2037,6 +2222,21 @@ function loadData() {
     if (data.exp1) {
       const exps = document.querySelectorAll('.exp2');
       data.exp1.forEach((v, i) => { if (exps[i]) exps[i].value = v; });
+    }
+
+    // Quick mode values
+    if (data.quickFixed !== undefined) document.getElementById('quick-fixed').value = data.quickFixed;
+    if (data.quickLiving !== undefined) document.getElementById('quick-living').value = data.quickLiving;
+    if (data.quickFlex !== undefined) document.getElementById('quick-flex').value = data.quickFlex;
+    if (data.quickOther !== undefined) document.getElementById('quick-other').value = data.quickOther;
+
+    // Expense mode (set UI only, no sync needed since values are already restored)
+    if (data.expMode0) {
+      expMode0 = data.expMode0;
+      document.getElementById('exp-mode-quick').classList.toggle('active', data.expMode0 === 'quick');
+      document.getElementById('exp-mode-detail').classList.toggle('active', data.expMode0 === 'detail');
+      document.getElementById('exp-quick-panel').style.display = data.expMode0 === 'quick' ? '' : 'none';
+      document.getElementById('exp-detail-panel').style.display = data.expMode0 === 'detail' ? '' : 'none';
     }
 
     // Debts - clear default, add from saved
@@ -2098,7 +2298,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // Bind events
-  document.querySelectorAll('.exp').forEach(i => i.addEventListener('input', updateTotals0));
+  document.querySelectorAll('.exp').forEach(i => i.addEventListener('input', function() { updateTotals0(); updateIncome(); }));
   document.querySelectorAll('.exp2').forEach(i => i.addEventListener('input', updateTotals1));
 
   // Update all displays
