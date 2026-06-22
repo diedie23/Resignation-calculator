@@ -186,16 +186,17 @@
   }
   .group-wrap:hover { box-shadow: var(--shadow-lg); }
   .group-head {
-    display: flex; align-items: center; padding: 14px 16px;
-    cursor: pointer; gap: 10px; border-top: 0.5px solid var(--border);
+    display: flex; align-items: center; padding: 14px 12px;
+    cursor: pointer; gap: 8px; border-top: 0.5px solid var(--border);
     min-height: 52px; transition: background 0.15s; user-select: none;
+    justify-content: flex-start;
   }
   .section-title + .group-head, .section-title + * .group-head:first-child { border-top: none; }
   .group-head:first-of-type { border-top: none; }
   .group-head:hover { background: var(--accent-bg); }
   .group-head:active { background: var(--accent-bg2); }
   .group-icon { font-size: 22px; width: 28px; text-align: center; flex-shrink: 0; }
-  .group-name { font-size: 15px; font-weight: 600; flex: 1; }
+  .group-name { font-size: 15px; font-weight: 600; flex: 1; text-align: left; }
   .group-sum {
     font-size: 13px; color: var(--accent); flex-shrink: 0; font-weight: 600;
     background: var(--accent-bg); padding: 3px 10px; border-radius: 20px;
@@ -215,10 +216,10 @@
   /* ── Expense mode toggle ── */
   .exp-mode-toggle {
     display: flex; align-items: center; gap: 0;
-    padding: 10px 15px; background: var(--card);
+    padding: 14px 16px 0; background: var(--card);
     border-top: 0.5px solid var(--border);
   }
-  .section-title + .exp-mode-toggle { border-top: none; }
+  .section-title + .exp-mode-toggle { border-top: none; padding-top: 8px; }
   .exp-mode-btn {
     flex: 1; padding: 8px 0; font-size: 13px; text-align: center;
     border: 1.5px solid var(--border); background: var(--card2);
