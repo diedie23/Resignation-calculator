@@ -141,27 +141,31 @@
 
   /* ── Input rows ── */
   .field {
-    display: grid; grid-template-columns: 1fr auto; align-items: center;
+    display: flex; align-items: center; flex-wrap: nowrap;
     padding: 10px 16px; border-top: 0.5px solid var(--border); gap: 10px;
     transition: background 0.15s; box-sizing: border-box;
+    min-height: 56px;
   }
   .field:first-of-type { border-top: none; }
   .field:hover { background: var(--accent-bg); }
   .field label {
-    font-size: 14px; color: var(--text);
+    font-size: 14px; color: var(--text); flex: 1; min-width: 0;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    min-width: 0; font-weight: 450;
-    line-height: 1.2; align-self: center;
+    font-weight: 450;
+    display: flex; align-items: center;
+    height: 36px;
+    line-height: 36px;
   }
-  .field-right { display: flex; align-items: center; gap: 6px; justify-self: end; }
+  .field-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
   .field input[type=number] {
     width: 100px; text-align: right; border: 2px solid transparent;
     background: var(--card2); border-radius: var(--radius-sm);
-    padding: 7px 12px; font-size: 15px; font-weight: 600;
+    padding: 0 12px; font-size: 15px; font-weight: 600;
     color: var(--text); outline: none;
     -webkit-appearance: none; appearance: none;
     transition: var(--transition);
     box-sizing: border-box; height: 36px;
+    line-height: 36px;
   }
   .field input[type=number]:focus {
     border-color: var(--accent); background: var(--accent-bg);
@@ -741,9 +745,9 @@
     .verdict-card { padding: 16px; }
     .verdict-card .vt { font-size: 16px; }
     .verdict-card .vd { font-size: 13px; }
-    .field { grid-template-columns: 1fr; gap: 4px; padding: 8px 16px; }
-    .field label { grid-column: 1; }
-    .field-right { grid-column: 1; justify-content: flex-end; }
+    .field { flex-wrap: wrap; gap: 4px; padding: 10px 16px; min-height: auto; }
+    .field label { flex: 1 1 100%; height: auto; line-height: 1.5; }
+    .field-right { width: 100%; justify-content: flex-end; }
     .exp-mode-toggle { flex-direction: column; }
     .onetime-item { flex-wrap: wrap; }
     input[type=number] { width: 80px; font-size: 14px; height: 32px; padding: 0 10px; }
