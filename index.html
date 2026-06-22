@@ -142,17 +142,18 @@
   .field label {
     font-size: 14px; color: var(--text); flex: 1; min-width: 0;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    padding: 12px 0; font-weight: 450;
-    display: flex; align-items: center; line-height: 1; min-height: 38px;
+    padding: 0; font-weight: 450;
+    display: flex; align-items: center; line-height: 1;
+    height: 38px;
   }
-  .field-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; min-height: 38px; }
+  .field-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
   .field input[type=number] {
     width: 100px; text-align: right; border: 2px solid transparent;
     background: var(--card2); border-radius: var(--radius-sm);
-    padding: 8px 12px; font-size: 15px; font-weight: 600;
+    padding: 0 12px; font-size: 15px; font-weight: 600;
     color: var(--text); outline: none; -webkit-appearance: none;
-    min-height: 38px; transition: var(--transition);
-    line-height: normal;
+    height: 38px; transition: var(--transition);
+    line-height: 38px;
   }
   .field input[type=number]:focus {
     border-color: var(--accent); background: var(--accent-bg);
@@ -239,17 +240,17 @@
   .debt-card-row1 { display: flex; align-items: center; gap: 8px; min-height: 42px; }
   .debt-card-row1 input.debt-name {
     flex: 1; min-width: 0; border: 2px solid transparent; background: var(--card2);
-    border-radius: 8px; padding: 8px 12px; font-size: 14px; color: var(--text);
+    border-radius: 8px; padding: 0 12px; font-size: 14px; color: var(--text);
     outline: none; transition: var(--transition); font-weight: 500;
-    line-height: normal; min-height: 38px;
+    height: 38px; line-height: 38px;
   }
   .debt-card-row1 input.debt-name:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
   .debt-card-row1 input.debt-bal {
     width: 100px; text-align: right; flex-shrink: 0; border: 2px solid transparent;
-    background: var(--card2); border-radius: 8px; padding: 8px 12px; font-size: 14px;
+    background: var(--card2); border-radius: 8px; padding: 0 12px; font-size: 14px;
     color: var(--text); outline: none; -webkit-appearance: none;
     transition: var(--transition); font-weight: 600;
-    line-height: normal; min-height: 38px;
+    height: 38px; line-height: 38px;
   }
   .debt-card-row1 input.debt-bal:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
   .debt-card-row1 .unit { font-size: 12px; color: var(--text3); flex-shrink: 0; display: flex; align-items: center; line-height: 1; min-height: 16px; }
@@ -282,10 +283,10 @@
   .debt-monthly-row label { font-size: 13px; color: var(--text2); flex: 1; display: flex; align-items: center; line-height: 1; min-height: 20px; }
   .debt-monthly-row input {
     width: 100px; text-align: right; border: 2px solid transparent;
-    background: var(--card2); border-radius: 8px; padding: 8px 12px;
+    background: var(--card2); border-radius: 8px; padding: 0 12px;
     font-size: 14px; color: var(--text); outline: none;
     -webkit-appearance: none; flex-shrink: 0; transition: var(--transition); font-weight: 600;
-    line-height: normal; min-height: 38px;
+    height: 38px; line-height: 38px;
   }
   .debt-monthly-row input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
   .debt-monthly-row .unit { font-size: 12px; color: var(--text3); flex-shrink: 0; }
@@ -592,10 +593,10 @@
   }
   .tracker-cell input {
     flex: 1; min-width: 0; text-align: right; border: 2px solid transparent;
-    background: var(--card); border-radius: 8px; padding: 8px 12px;
+    background: var(--card); border-radius: 8px; padding: 0 12px;
     font-size: 14px; color: var(--text); outline: none;
     -webkit-appearance: none; transition: var(--transition); font-weight: 600;
-    line-height: normal; min-height: 38px;
+    height: 38px; line-height: 38px;
   }
   .tracker-cell input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
   .tracker-cell .unit { font-size: 12px; color: var(--text3); flex-shrink: 0; display: flex; align-items: center; line-height: 1; min-height: 16px; }
@@ -619,17 +620,17 @@
   .onetime-item:hover { background: rgba(99,102,241,0.03); }
   .onetime-item input.ot-name {
     flex: 1; min-width: 0; border: 2px solid transparent; background: var(--card2);
-    border-radius: 8px; padding: 8px 12px; font-size: 14px; color: var(--text);
+    border-radius: 8px; padding: 0 12px; font-size: 14px; color: var(--text);
     outline: none; transition: var(--transition); font-weight: 500;
-    line-height: normal; min-height: 38px;
+    height: 38px; line-height: 38px;
   }
   .onetime-item input.ot-name:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
   .onetime-item input.ot-amt {
     width: 96px; text-align: right; border: 2px solid transparent; background: var(--card2);
-    border-radius: 8px; padding: 8px 12px; font-size: 14px; color: var(--text);
+    border-radius: 8px; padding: 0 12px; font-size: 14px; color: var(--text);
     outline: none; -webkit-appearance: none; flex-shrink: 0;
     transition: var(--transition); font-weight: 600;
-    line-height: normal; min-height: 38px;
+    height: 38px; line-height: 38px;
   }
   .onetime-item input.ot-amt:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
   .onetime-item .unit { font-size: 12px; color: var(--text3); flex-shrink: 0; display: flex; align-items: center; line-height: 1; min-height: 16px; }
@@ -657,10 +658,10 @@
   }
   .extra-cell input {
     flex: 1; min-width: 0; text-align: right; border: 2px solid transparent;
-    background: var(--card); border-radius: 8px; padding: 8px 12px;
+    background: var(--card); border-radius: 8px; padding: 0 12px;
     font-size: 14px; color: var(--text); outline: none;
     -webkit-appearance: none; transition: var(--transition); font-weight: 600;
-    line-height: normal; min-height: 38px;
+    height: 38px; line-height: 38px;
   }
   .extra-cell input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
   .extra-cell .unit { font-size: 12px; color: var(--text3); flex-shrink: 0; display: flex; align-items: center; line-height: 1; min-height: 16px; }
