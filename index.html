@@ -141,24 +141,26 @@
 
   /* ── Input rows ── */
   .field {
-    display: flex; align-items: center; flex-wrap: nowrap;
-    padding: 0 16px; min-height: 52px; border-top: 0.5px solid var(--border); gap: 10px;
-    transition: background 0.15s;
+    display: grid; grid-template-columns: 1fr auto; grid-template-rows: 44px;
+    align-items: center; padding: 0 16px; border-top: 0.5px solid var(--border); gap: 10px;
+    transition: background 0.15s; box-sizing: border-box;
   }
   .field:first-of-type { border-top: none; }
   .field:hover { background: var(--accent-bg); }
   .field label {
-    font-size: 14px; color: var(--text); flex: 1; min-width: 0;
+    font-size: 14px; color: var(--text); min-width: 0;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    padding: 12px 0; font-weight: 450;
+    font-weight: 450; display: flex; align-items: center;
+    height: 44px; line-height: 44px;
   }
-  .field-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .field-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; height: 44px; }
   .field input[type=number] {
     width: 100px; text-align: right; border: 2px solid transparent;
     background: var(--card2); border-radius: var(--radius-sm);
-    padding: 8px 12px; font-size: 15px; font-weight: 600;
+    padding: 0 12px; font-size: 15px; font-weight: 600;
     color: var(--text); outline: none; -webkit-appearance: none;
-    min-height: 38px; transition: var(--transition);
+    transition: var(--transition);
+    box-sizing: border-box; height: 34px; line-height: 34px;
   }
   .field input[type=number]:focus {
     border-color: var(--accent); background: var(--accent-bg);
