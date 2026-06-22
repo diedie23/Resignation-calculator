@@ -134,17 +134,16 @@
   /* ── Input rows ── */
   .field {
     display: flex; align-items: center; flex-wrap: nowrap;
-    padding: 0 16px; min-height: 52px; border-top: 0.5px solid var(--border); gap: 10px;
-    transition: background 0.15s;
+    padding: 10px 16px; min-height: 54px; border-top: 0.5px solid var(--border); gap: 10px;
+    transition: background 0.15s; box-sizing: border-box;
   }
   .field:first-of-type { border-top: none; }
   .field:hover { background: var(--accent-bg); }
   .field label {
     font-size: 14px; color: var(--text); flex: 1; min-width: 0;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    padding: 0; font-weight: 450;
-    display: flex; align-items: center; line-height: 1;
-    height: 38px;
+    padding: 0; margin: 0; font-weight: 450;
+    line-height: 34px;
   }
   .field-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
   .field input[type=number] {
@@ -152,8 +151,8 @@
     background: var(--card2); border-radius: var(--radius-sm);
     padding: 0 12px; font-size: 15px; font-weight: 600;
     color: var(--text); outline: none; -webkit-appearance: none;
-    height: 38px; transition: var(--transition);
-    line-height: 38px;
+    height: 34px; transition: var(--transition);
+    box-sizing: border-box; vertical-align: middle;
   }
   .field input[type=number]:focus {
     border-color: var(--accent); background: var(--accent-bg);
@@ -224,10 +223,10 @@
   .exp-quick-hint {
     padding: 10px 16px 4px; font-size: 12px; color: var(--text3); font-weight: 500;
   }
-  .exp-quick-mode .field label { display: flex; flex-direction: column; gap: 2px; justify-content: center; min-height: 38px; }
+  .exp-quick-mode .field label { display: flex; flex-direction: column; gap: 2px; justify-content: center; line-height: 1.3; }
   .exp-quick-mode .field label .quick-sub {
     font-size: 11px; color: var(--text3); font-weight: 400;
-    line-height: 1.2; display: flex; align-items: center;
+    line-height: 1.2;
   }
 
   /* ── Debt rows ── */
@@ -237,12 +236,12 @@
     transition: background 0.15s;
   }
   .debt-card:hover { background: rgba(99,102,241,0.03); }
-  .debt-card-row1 { display: flex; align-items: center; gap: 8px; min-height: 42px; }
+  .debt-card-row1 { display: flex; align-items: center; gap: 8px; min-height: 54px; }
   .debt-card-row1 input.debt-name {
     flex: 1; min-width: 0; border: 2px solid transparent; background: var(--card2);
     border-radius: 8px; padding: 0 12px; font-size: 14px; color: var(--text);
     outline: none; transition: var(--transition); font-weight: 500;
-    height: 38px; line-height: 38px;
+    height: 34px; box-sizing: border-box;
   }
   .debt-card-row1 input.debt-name:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
   .debt-card-row1 input.debt-bal {
@@ -250,7 +249,7 @@
     background: var(--card2); border-radius: 8px; padding: 0 12px; font-size: 14px;
     color: var(--text); outline: none; -webkit-appearance: none;
     transition: var(--transition); font-weight: 600;
-    height: 38px; line-height: 38px;
+    height: 34px; box-sizing: border-box;
   }
   .debt-card-row1 input.debt-bal:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
   .debt-card-row1 .unit { font-size: 12px; color: var(--text3); flex-shrink: 0; display: flex; align-items: center; line-height: 1; min-height: 16px; }
@@ -278,15 +277,15 @@
   }
   .debt-monthly-row {
     display: flex; align-items: center; gap: 8px;
-    padding: 0 0 2px; animation: fadeIn 0.2s ease; min-height: 42px;
+    padding: 6px 0; animation: fadeIn 0.2s ease; min-height: 44px;
   }
-  .debt-monthly-row label { font-size: 13px; color: var(--text2); flex: 1; display: flex; align-items: center; line-height: 1; min-height: 20px; }
+  .debt-monthly-row label { font-size: 13px; color: var(--text2); flex: 1; line-height: 34px; }
   .debt-monthly-row input {
     width: 100px; text-align: right; border: 2px solid transparent;
     background: var(--card2); border-radius: 8px; padding: 0 12px;
     font-size: 14px; color: var(--text); outline: none;
     -webkit-appearance: none; flex-shrink: 0; transition: var(--transition); font-weight: 600;
-    height: 38px; line-height: 38px;
+    height: 34px; box-sizing: border-box;
   }
   .debt-monthly-row input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
   .debt-monthly-row .unit { font-size: 12px; color: var(--text3); flex-shrink: 0; }
@@ -585,18 +584,18 @@
   .tracker-cell {
     display: flex; align-items: center; padding: 10px 16px;
     border-top: 0.5px solid var(--border); gap: 8px; background: var(--card2);
-    min-height: 52px;
+    min-height: 54px;
   }
   .tracker-cell .tc-month {
     font-size: 13px; color: var(--text2); width: 36px; flex-shrink: 0; font-weight: 600;
-    display: flex; align-items: center; line-height: 1; min-height: 20px;
+    line-height: 34px;
   }
   .tracker-cell input {
     flex: 1; min-width: 0; text-align: right; border: 2px solid transparent;
     background: var(--card); border-radius: 8px; padding: 0 12px;
     font-size: 14px; color: var(--text); outline: none;
     -webkit-appearance: none; transition: var(--transition); font-weight: 600;
-    height: 38px; line-height: 38px;
+    height: 34px; box-sizing: border-box;
   }
   .tracker-cell input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
   .tracker-cell .unit { font-size: 12px; color: var(--text3); flex-shrink: 0; display: flex; align-items: center; line-height: 1; min-height: 16px; }
@@ -615,14 +614,14 @@
   .onetime-item {
     display: flex; align-items: center; padding: 10px 16px;
     border-top: 0.5px solid var(--border); gap: 8px;
-    transition: background 0.15s; min-height: 52px;
+    transition: background 0.15s; min-height: 54px;
   }
   .onetime-item:hover { background: rgba(99,102,241,0.03); }
   .onetime-item input.ot-name {
     flex: 1; min-width: 0; border: 2px solid transparent; background: var(--card2);
     border-radius: 8px; padding: 0 12px; font-size: 14px; color: var(--text);
     outline: none; transition: var(--transition); font-weight: 500;
-    height: 38px; line-height: 38px;
+    height: 34px; box-sizing: border-box;
   }
   .onetime-item input.ot-name:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
   .onetime-item input.ot-amt {
@@ -630,7 +629,7 @@
     border-radius: 8px; padding: 0 12px; font-size: 14px; color: var(--text);
     outline: none; -webkit-appearance: none; flex-shrink: 0;
     transition: var(--transition); font-weight: 600;
-    height: 38px; line-height: 38px;
+    height: 34px; box-sizing: border-box;
   }
   .onetime-item input.ot-amt:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
   .onetime-item .unit { font-size: 12px; color: var(--text3); flex-shrink: 0; display: flex; align-items: center; line-height: 1; min-height: 16px; }
@@ -650,18 +649,18 @@
   .extra-cell {
     display: flex; align-items: center; padding: 10px 16px 10px 54px;
     border-top: 0.5px solid var(--border); gap: 8px; background: var(--card2);
-    min-height: 52px;
+    min-height: 54px;
   }
   .extra-cell .ec-month {
     font-size: 13px; color: var(--text2); width: 36px; flex-shrink: 0; font-weight: 600;
-    display: flex; align-items: center; line-height: 1; min-height: 20px;
+    line-height: 34px;
   }
   .extra-cell input {
     flex: 1; min-width: 0; text-align: right; border: 2px solid transparent;
     background: var(--card); border-radius: 8px; padding: 0 12px;
     font-size: 14px; color: var(--text); outline: none;
     -webkit-appearance: none; transition: var(--transition); font-weight: 600;
-    height: 38px; line-height: 38px;
+    height: 34px; box-sizing: border-box;
   }
   .extra-cell input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
   .extra-cell .unit { font-size: 12px; color: var(--text3); flex-shrink: 0; display: flex; align-items: center; line-height: 1; min-height: 16px; }
@@ -737,12 +736,12 @@
     .verdict-card { padding: 16px; }
     .verdict-card .vt { font-size: 16px; }
     .verdict-card .vd { font-size: 13px; }
-    .field { flex-wrap: wrap; gap: 4px; min-height: auto; }
-    .field label { flex: 1 1 100%; min-height: auto; padding: 8px 0; }
-    .field-right { width: 100%; justify-content: flex-end; min-height: auto; }
+    .field { flex-wrap: wrap; gap: 4px; padding: 8px 16px; }
+    .field label { flex: 1 1 100%; line-height: 34px; }
+    .field-right { width: 100%; justify-content: flex-end; }
     .exp-mode-toggle { flex-direction: column; }
     .onetime-item { flex-wrap: wrap; }
-    input[type=number] { width: 80px; font-size: 14px; min-height: 36px; }
+    input[type=number] { width: 80px; font-size: 14px; height: 32px; }
   }
   @media (max-width: 360px) {
     .summary-grid { gap: 5px; }
