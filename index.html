@@ -626,6 +626,33 @@
   }
   .burndown-card .bc-title { font-size: 13px; font-weight: 700; color: var(--text2); margin-bottom: 12px; }
   .burndown-card canvas { width: 100%; height: 180px; }
+
+  /* ── Mobile responsive ── */
+  @media (max-width: 480px) {
+    .summary-grid { grid-template-columns: 1fr; gap: 10px; }
+    .si-gap-row { grid-column: 1 / -1; }
+    .si-value { font-size: 18px; }
+    .si-gap-main { font-size: 22px; }
+    .si-gap-inner { flex-direction: column; text-align: center; gap: 8px; padding: 14px 12px; }
+    .si-gap-inner > div:last-child { width: 100%; }
+    .metric { padding: 12px; }
+    .verdict-card { padding: 16px; }
+    .verdict-card .vt { font-size: 16px; }
+    .verdict-card .vd { font-size: 13px; }
+    .field { flex-wrap: wrap; gap: 4px; }
+    .field label { flex: 1 1 100%; }
+    .field-right { width: 100%; justify-content: flex-end; }
+    .exp-mode-toggle { flex-direction: column; }
+    .onetime-item { flex-wrap: wrap; }
+    input[type=number] { width: 80px; font-size: 14px; }
+  }
+  @media (max-width: 360px) {
+    .summary-grid { gap: 8px; }
+    .si-label { font-size: 10px; }
+    .si-value { font-size: 16px; }
+    .header h1 { font-size: 18px; }
+    .tab { font-size: 13px; padding: 10px 12px; }
+  }
 </style>
 </head>
 <body>
@@ -1975,24 +2002,22 @@ function calcPlan(silent) {
   document.getElementById('res0').style.display = 'block';
   document.getElementById('empty0').style.display = 'none';
 
-  // Verdict
+  // Verdict - 一句话结论，不重复核心卡片已有数据
   const v0 = document.getElementById('v0');
   let vtitle, vdesc, vbg, vbo;
-  const inflationNote = inflationRate > 0 ? `（含通胀${inflationRate}%）` : '';
-  const bufferNote = bufferPct > 0 ? `（含${bufferPct}%缓冲）` : '';
   if (canNow) {
     vbg = 'var(--green-bg)'; vbo = 'var(--green-bd)';
     vtitle = '✅ 现在就可以考虑提离职！';
-    vdesc = `当前资金 ${fmt(savings + invest + np)} 元，已达到目标金额 ${fmt(targetFund)} 元，随时可以离职${inflationNote}${bufferNote}。`;
+    vdesc = '当前资金已覆盖目标金额，随时可以离职。';
   } else if (save <= 0) {
     vbg = 'var(--red-bg)'; vbo = 'var(--red-bd)';
     vtitle = '🚨 目前月光，先控制支出';
-    vdesc = `月薪 ${fmt(salary)} 元，月支出 ${fmt(totalExp)} 元，每月不剩钱。建议先减少负债和开销。`;
+    vdesc = `月薪 ${fmt(salary)} 元，月支出 ${fmt(totalExp)} 元，每月不剩钱。建议先减少负债和开销，再考虑离职。`;
   } else {
     vbg = 'var(--orange-bg)'; vbo = 'var(--orange-bd)';
     vtitle = `🗓️ 预计再存 ${mToQuit} 个月后可以离职`;
     const d = new Date(); d.setMonth(d.getMonth() + mToQuit);
-    vdesc = `按每月净存 ${fmt(save)} 元，预计 ${d.getFullYear()} 年 ${d.getMonth() + 1} 月达到条件（还需积累 ${fmt(stillNeed)} 元）${inflationNote}${bufferNote}。`;
+    vdesc = `按每月净存 ${fmt(save)} 元，预计 ${d.getFullYear()} 年 ${d.getMonth() + 1} 月达标。`;
   }
   v0.style.cssText = `background:${vbg};border-color:${vbo};`;
   v0.innerHTML = `<div class="vt">${vtitle}</div><div class="vd">${vdesc}</div>`;
@@ -2075,17 +2100,25 @@ function calcPlan(silent) {
   // Metrics 区域不再需要 - 所有核心数据已在上方 summary 卡片中完整展示
   document.getElementById('cards0').style.display = 'none';
 
-  // Breakdown with donut
-  const bdItems = Object.keys(grps0).map(g => ({ icon: grps0[g], label: grpNames0[g], val: grpTotals[g] })).filter(x => x.val > 0);
-  if (debts.monthly > 0) bdItems.push({ icon: '💳', label: '负债还款', val: debts.monthly });
-  renderBreakdown('bd0', bdItems, totalExp);
+  // Breakdown with donut - 未达标时显示（帮助用户优化支出）
+  const bd0El = document.getElementById('bd0');
+  if (!canNow) {
+    const bdItems = Object.keys(grps0).map(g => ({ icon: grps0[g], label: grpNames0[g], val: grpTotals[g] })).filter(x => x.val > 0);
+    if (debts.monthly > 0) bdItems.push({ icon: '💳', label: '负债还款', val: debts.monthly });
+    renderBreakdown('bd0', bdItems, totalExp);
+    bd0El.style.display = '';
+  } else {
+    bd0El.style.display = 'none';
+  }
 
-  // Burn-down chart (use average monthly burn for visualization)
-  const avgMonthlyBurn = qmo > 0 ? gapSpending / qmo : qm;
-  if (canNow || save > 0) {
-    const bd0 = document.getElementById('burndown0');
-    bd0.style.display = '';
+  // Burn-down chart - 未达标时显示（展示资金消耗轨迹）
+  const burnEl = document.getElementById('burndown0');
+  if (!canNow && save > 0) {
+    const avgMonthlyBurn = qmo > 0 ? gapSpending / qmo : qm;
+    burnEl.style.display = '';
     setTimeout(() => drawBurndown('burndown-canvas0', avail + gapSpending, avgMonthlyBurn, qmo + 3), 100);
+  } else {
+    burnEl.style.display = 'none';
   }
 
   // Timeline
@@ -2103,14 +2136,50 @@ function calcPlan(silent) {
     document.getElementById('tl0').style.display = 'none';
   }
 
-  // Tips
+  // Tips - 动态化：根据数据精准生成建议
   const bigG = Object.keys(grpTotals).reduce((a, b) => grpTotals[a] > grpTotals[b] ? a : b);
   const tipList = [];
-  if (debts.balance > 0) tipList.push(`建议离职前尽量还清负债（共 ${fmt(debts.balance)} 元），减少离职后的还款压力。`);
-  tipList.push(`你目前支出最多的是「${grpNames0[bigG]}」（${fmt(grpTotals[bigG])} 元/月），是否有压缩空间？`);
-  if (save > 0 && save < 3000) tipList.push('月净结余偏少，副业或加薪是提前离职的最短路径。');
-  tipList.push('离职前建议购买商业医疗险，并规划灵活就业身份缴纳社保，避免断缴影响权益。');
-  if (oneTime > 0) tipList.push(`一次性支出 ${fmt(oneTime)} 元已计入，确认是否可以延后或缩减。`);
+
+  // 1. 负债相关
+  if (debts.balance > 0) {
+    tipList.push(`建议离职前尽量还清负债（共 ${fmt(debts.balance)} 元），减少离职后的还款压力。`);
+  }
+
+  // 2. 支出优化（只在高支出占比时提示）
+  const bigGRatio = grpTotals[bigG] / (totalExp || 1);
+  if (bigGRatio > 0.4) {
+    tipList.push(`「${grpNames0[bigG]}」占月支出 ${(bigGRatio * 100).toFixed(0)}%，比例偏高，是否有压缩空间？`);
+  } else if (grpTotals[bigG] > 3000) {
+    tipList.push(`你目前支出最多的是「${grpNames0[bigG]}」（${fmt(grpTotals[bigG])} 元/月），看看能不能省一点。`);
+  }
+
+  // 3. 月净结余建议（分级提示）
+  if (save <= 0) {
+    tipList.push('当前月支出 ≥ 月收入，建议先削减支出或增加收入，否则很难积累离职资金。');
+  } else if (save < 3000) {
+    tipList.push('月净结余偏少，副业或加薪是提前离职的最短路径。');
+  }
+
+  // 4. 一次性支出建议
+  if (oneTime > 0) {
+    tipList.push(`一次性支出 ${fmt(oneTime)} 元已计入目标，确认是否可以延后或缩减？`);
+  }
+
+  // 5. 应急储备提醒（只在目标金额较低时提示）
+  if (em < 10000 && qmo >= 3) {
+    tipList.push(`应急储备底线 ${fmt(em)} 元偏低，建议至少保留 3 个月基本生活费作为应急资金。`);
+  }
+
+  // 6. 社保/医保提醒（通用，但对低收入者更重要）
+  if (save > 0 || canNow) {
+    tipList.push('离职前建议确认：① 商业医疗险是否覆盖空窗期 ② 社保是否可灵活就业缴纳。');
+  }
+
+  // 7. 离职补偿提醒（有补偿时）
+  if (np > 0) {
+    tipList.push(`离职补偿 ${fmt(np)} 元已计入可用资金，注意和 HR 确认发放时间（离职当天 / 下月发薪日）。`);
+  }
+
   document.getElementById('tips0').innerHTML = '<div class="tc-title">💡 个性化建议</div>' +
     tipList.map(t => `<div class="tip-item"><span class="tip-arrow">›</span><span>${t}</span></div>`).join('');
 
