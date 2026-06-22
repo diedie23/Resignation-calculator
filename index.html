@@ -141,28 +141,27 @@
 
   /* ── Input rows ── */
   .field {
-    display: flex; align-items: center; flex-wrap: nowrap;
-    padding: 8px 16px; border-top: 0.5px solid var(--border); gap: 10px;
+    display: grid; grid-template-columns: 1fr auto; align-items: center;
+    padding: 10px 16px; border-top: 0.5px solid var(--border); gap: 10px;
     transition: background 0.15s; box-sizing: border-box;
   }
   .field:first-of-type { border-top: none; }
   .field:hover { background: var(--accent-bg); }
   .field label {
-    font-size: 14px; color: var(--text); flex: 1; min-width: 0;
+    font-size: 14px; color: var(--text);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    padding: 0; margin: 0; font-weight: 450;
-    line-height: 1.5;
-    display: flex; align-items: center;
+    min-width: 0; font-weight: 450;
+    line-height: 1.2; align-self: center;
   }
-  .field-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .field-right { display: flex; align-items: center; gap: 6px; justify-self: end; }
   .field input[type=number] {
     width: 100px; text-align: right; border: 2px solid transparent;
     background: var(--card2); border-radius: var(--radius-sm);
-    padding: 0.4em 12px; font-size: 14px; font-weight: 600;
+    padding: 7px 12px; font-size: 15px; font-weight: 600;
     color: var(--text); outline: none;
     -webkit-appearance: none; appearance: none;
     transition: var(--transition);
-    box-sizing: border-box;
+    box-sizing: border-box; height: 36px;
   }
   .field input[type=number]:focus {
     border-color: var(--accent); background: var(--accent-bg);
@@ -249,17 +248,17 @@
   .debt-card-row1 { display: flex; align-items: center; gap: 8px; padding: 8px 0; }
   .debt-card-row1 input.debt-name {
     flex: 1; min-width: 0; border: 2px solid transparent; background: var(--card2);
-    border-radius: 8px; padding: 0.4em 12px; font-size: 14px; color: var(--text);
+    border-radius: 8px; padding: 7px 12px; font-size: 14px; color: var(--text);
     outline: none; transition: var(--transition); font-weight: 500;
-    box-sizing: border-box;
+    box-sizing: border-box; height: 36px;
   }
   .debt-card-row1 input.debt-name:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
   .debt-card-row1 input.debt-bal {
     width: 100px; text-align: right; flex-shrink: 0; border: 2px solid transparent;
-    background: var(--card2); border-radius: 8px; padding: 0.4em 12px; font-size: 14px;
+    background: var(--card2); border-radius: 8px; padding: 7px 12px; font-size: 14px;
     color: var(--text); outline: none; -webkit-appearance: none;
     transition: var(--transition); font-weight: 600;
-    box-sizing: border-box;
+    box-sizing: border-box; height: 36px;
   }
   .debt-card-row1 input.debt-bal:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
   .debt-card-row1 .unit { font-size: 12px; color: var(--text3); flex-shrink: 0; display: flex; align-items: center; line-height: 1; min-height: 16px; }
@@ -292,10 +291,10 @@
   .debt-monthly-row label { font-size: 13px; color: var(--text2); flex: 1; }
   .debt-monthly-row input {
     width: 100px; text-align: right; border: 2px solid transparent;
-    background: var(--card2); border-radius: 8px; padding: 0.4em 12px;
+    background: var(--card2); border-radius: 8px; padding: 7px 12px;
     font-size: 14px; color: var(--text); outline: none;
     -webkit-appearance: none; flex-shrink: 0; transition: var(--transition); font-weight: 600;
-    box-sizing: border-box;
+    box-sizing: border-box; height: 36px;
   }
   .debt-monthly-row input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
   .debt-monthly-row .unit { font-size: 12px; color: var(--text3); flex-shrink: 0; }
@@ -600,10 +599,10 @@
   }
   .tracker-cell input {
     flex:1; min-width: 0; text-align: right; border: 2px solid transparent;
-    background: var(--card); border-radius: 8px; padding: 0.4em 12px;
+    background: var(--card); border-radius: 8px; padding: 7px 12px;
     font-size: 14px; color: var(--text); outline: none;
     -webkit-appearance: none; transition: var(--transition); font-weight: 600;
-    box-sizing: border-box;
+    box-sizing: border-box; height: 36px;
   }
   .tracker-cell input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
   .tracker-cell .unit { font-size: 12px; color: var(--text3); flex-shrink: 0; display: flex; align-items: center; line-height: 1; min-height: 16px; }
@@ -627,17 +626,17 @@
   .onetime-item:hover { background: rgba(99,102,241,0.03); }
   .onetime-item input.ot-name {
     flex: 1; min-width: 0; border: 2px solid transparent; background: var(--card2);
-    border-radius: 8px; padding: 0.4em 12px; font-size: 14px; color: var(--text);
+    border-radius: 8px; padding: 7px 12px; font-size: 14px; color: var(--text);
     outline: none; transition: var(--transition); font-weight: 500;
-    box-sizing: border-box;
+    box-sizing: border-box; height: 36px;
   }
   .onetime-item input.ot-name:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
   .onetime-item input.ot-amt {
     width: 96px; text-align: right; border: 2px solid transparent; background: var(--card2);
-    border-radius: 8px; padding: 0.4em 12px; font-size: 14px; color: var(--text);
+    border-radius: 8px; padding: 7px 12px; font-size: 14px; color: var(--text);
     outline: none; -webkit-appearance: none; flex-shrink: 0;
     transition: var(--transition); font-weight: 600;
-    box-sizing: border-box;
+    box-sizing: border-box; height: 36px;
   }
   .onetime-item input.ot-amt:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
   .onetime-item .unit { font-size: 12px; color: var(--text3); flex-shrink: 0; display: flex; align-items: center; line-height: 1; min-height: 16px; }
@@ -663,10 +662,10 @@
   }
   .extra-cell input {
     flex: 1; min-width: 0; text-align: right; border: 2px solid transparent;
-    background: var(--card); border-radius: 8px; padding: 0.4em 12px;
+    background: var(--card); border-radius: 8px; padding: 7px 12px;
     font-size: 14px; color: var(--text); outline: none;
     -webkit-appearance: none; transition: var(--transition); font-weight: 600;
-    box-sizing: border-box;
+    box-sizing: border-box; height: 36px;
   }
   .extra-cell input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
   .extra-cell .unit { font-size: 12px; color: var(--text3); flex-shrink: 0; display: flex; align-items: center; line-height: 1; min-height: 16px; }
@@ -742,12 +741,12 @@
     .verdict-card { padding: 16px; }
     .verdict-card .vt { font-size: 16px; }
     .verdict-card .vd { font-size: 13px; }
-    .field { flex-wrap: wrap; gap: 4px; padding: 8px 16px; }
-    .field label { flex: 1 1 100%; }
-    .field-right { width: 100%; justify-content: flex-end; }
+    .field { grid-template-columns: 1fr; gap: 4px; padding: 8px 16px; }
+    .field label { grid-column: 1; }
+    .field-right { grid-column: 1; justify-content: flex-end; }
     .exp-mode-toggle { flex-direction: column; }
     .onetime-item { flex-wrap: wrap; }
-    input[type=number] { width: 80px; font-size: 14px; padding: 0.35em 10px; }
+    input[type=number] { width: 80px; font-size: 14px; height: 32px; padding: 0 10px; }
   }
   @media (max-width: 360px) {
     .summary-grid { gap: 5px; }
