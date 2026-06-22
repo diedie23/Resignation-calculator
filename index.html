@@ -1962,11 +1962,15 @@ function calcPlan(silent) {
   // Apply buffer coefficient
   const gapSpending = rawGapSpending * (1 + bufferPct / 100);
 
-  const targetFund = gapSpending + em + debts.balance;
+  // 离职目标 = 空窗期预计花费 + 一次性支出 + 应急储备底线
+  const targetFund = gapSpending + oneTime + em;
+  // 当前可用资金 = 净资产 + 离职补偿 - 应急储备 - 一次性支出
   const avail = netAssets + np - em - oneTime;
-  const stillNeed = Math.max(0, targetFund - (savings + invest + np - oneTime));
+  // 还差多少 = 目标金额 - 当前总资金(存款+投资+补偿)
+  const stillNeed = Math.max(0, targetFund - (savings + invest + np));
   const mToQuit = save > 0 ? Math.ceil(stillNeed / save) : 9999;
-  const canNow = avail >= gapSpending;
+  // canNow: 当前总资金(存款+投资+补偿) >= 离职目标金额
+  const canNow = (savings + invest + np) >= targetFund;
 
   document.getElementById('res0').style.display = 'block';
   document.getElementById('empty0').style.display = 'none';
@@ -1979,7 +1983,7 @@ function calcPlan(silent) {
   if (canNow) {
     vbg = 'var(--green-bg)'; vbo = 'var(--green-bd)';
     vtitle = '✅ 现在就可以考虑提离职！';
-    vdesc = `扣除负债和应急储备后，还有 ${fmt(avail)} 元，足以支撑 ${qmo} 个月空窗期${inflationNote}${bufferNote}。`;
+    vdesc = `当前资金 ${fmt(savings + invest + np)} 元，已达到目标金额 ${fmt(targetFund)} 元，随时可以离职${inflationNote}${bufferNote}。`;
   } else if (save <= 0) {
     vbg = 'var(--red-bg)'; vbo = 'var(--red-bd)';
     vtitle = '🚨 目前月光，先控制支出';
@@ -2006,7 +2010,7 @@ function calcPlan(silent) {
       <div class="summary-item">
         <div class="si-label">目标金额</div>
         <div class="si-value" style="color:var(--accent)">${fmt(targetFund)}</div>
-        <div class="si-sub">元</div>
+        <div class="si-sub">空窗${fmt(gapSpending)}+一次${fmt(oneTime)}+应急${fmt(em)}</div>
       </div>
       <div class="summary-item">
         <div class="si-label">当前净资产</div>
@@ -2038,8 +2042,9 @@ function calcPlan(silent) {
   // Metrics (simplified - only supplementary details)
   document.getElementById('cards0').innerHTML = `
     <div class="metric"><div class="ml">空窗期总花费</div><div class="mv">${fmt(gapSpending)}元</div><div class="ms">${qmo}个月${inflationRate > 0 ? '(含通胀)' : ''}${bufferPct > 0 ? '(含缓冲)' : ''}</div></div>
+    <div class="metric"><div class="ml">一次性支出</div><div class="mv" style="color:${oneTime > 0 ? 'var(--red)' : 'var(--text3)'}">${oneTime > 0 ? fmt(oneTime) + '元' : '无'}</div><div class="ms">计入目标金额</div></div>
+    <div class="metric"><div class="ml">应急储备底线</div><div class="mv" style="color:var(--orange)">${fmt(em)}元</div><div class="ms">计入目标金额</div></div>
     <div class="metric"><div class="ml">负债总额</div><div class="mv" style="color:${debts.balance > 0 ? 'var(--red)' : 'var(--text)'}">${fmt(debts.balance)}元</div><div class="ms">月还 ${fmt(debts.monthly)} 元</div></div>
-    <div class="metric"><div class="ml">一次性支出</div><div class="mv" style="color:${oneTime > 0 ? 'var(--red)' : 'var(--text3)'}">${oneTime > 0 ? fmt(oneTime) + '元' : '无'}</div><div class="ms">直接扣除可用资金</div></div>
     <div class="metric"><div class="ml">离职补偿(N+1)</div><div class="mv">${np > 0 ? fmt(np) + '元' : '无'}</div><div class="ms">可计入可用资金</div></div>
   `;
 
@@ -2060,14 +2065,17 @@ function calcPlan(silent) {
   if (!canNow && save > 0) {
     const tl = document.getElementById('tl0'); tl.style.display = '';
     let html = '<div class="tc-title">📅 积累进度预测</div>';
+    // 当前总资金 = 存款 + 投资 + 离职补偿
+    const currentTotal = savings + invest + np;
     [3, 6, 12].forEach(m => {
-      const proj = Math.max(0, avail) + save * m;
-      const ok = proj >= gapSpending;
+      const proj = currentTotal + save * m;
+      const ok = proj >= targetFund;
       html += `<div class="tl-row"><div class="tl-dot" style="background:${ok ? 'var(--green)' : 'var(--text3)'}"></div><div class="tl-label">再存 ${m} 个月</div><div class="tl-val">${fmt(proj)} 元 ${ok ? '✅' : ''}</div></div>`;
     });
     tl.innerHTML = html;
 
-    const pct = Math.min(100, Math.round(Math.max(0, avail) / gapSpending * 100));
+    // 进度百分比 = 当前总资金 / 目标金额
+    const pct = Math.min(100, Math.round(currentTotal / targetFund * 100));
     const p0 = document.getElementById('prog0'); p0.style.display = '';
     const progCol0 = pct >= 70 ? 'var(--gradient2)' : pct >= 30 ? 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)' : 'linear-gradient(135deg, #ef4444 0%, #f87171 100%)';
     p0.innerHTML = `<div class="pc-row"><span>离职目标达成进度</span><span>${pct}%</span></div><div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${progCol0}"></div></div>`;
