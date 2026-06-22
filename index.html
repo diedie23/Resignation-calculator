@@ -2026,7 +2026,7 @@ function calcPlan(silent) {
           <div style="height:6px;background:rgba(128,128,128,0.15);border-radius:3px;overflow:hidden;"><div style="height:100%;border-radius:3px;width:${pct}%;background:${pct >= 70 ? 'linear-gradient(90deg,#10b981,#34d399)' : pct >= 30 ? 'linear-gradient(90deg,#f59e0b,#fbbf24)' : 'linear-gradient(90deg,#ef4444,#f87171)'}"></div></div>
         </div>
       </div>
-      <!-- 第2行：空窗花费 / 一次性支出 -->
+      <!-- 第2行：目标组成 - 空窗花费 / 一次性支出 -->
       <div class="summary-item">
         <div class="si-label">空窗期总花费</div>
         <div class="si-value">${fmt(gapSpending)}</div>
@@ -2037,16 +2037,16 @@ function calcPlan(silent) {
         <div class="si-value" style="color:${oneTime > 0 ? 'var(--red)' : 'var(--text3)'}">${oneTime > 0 ? fmt(oneTime) : '无'}</div>
         <div class="si-sub">计入目标</div>
       </div>
-      <!-- 第3行：应急储备 / 负债总额 -->
+      <!-- 第3行：应急储备 / 月净结余（关键行动数据） -->
       <div class="summary-item">
         <div class="si-label">应急储备底线</div>
         <div class="si-value" style="color:var(--orange)">${fmt(em)}</div>
         <div class="si-sub">计入目标</div>
       </div>
-      <div class="summary-item">
-        <div class="si-label">负债总额</div>
-        <div class="si-value" style="color:${debts.balance > 0 ? 'var(--red)' : 'var(--text)'}">${fmt(debts.balance)}</div>
-        <div class="si-sub">月还 ${fmt(debts.monthly)}</div>
+      <div class="summary-item si-highlight">
+        <div class="si-label">月净结余</div>
+        <div class="si-value" style="color:${save >= 0 ? 'var(--green)' : 'var(--red)'}">${save >= 0 ? '+' : ''}${fmt(save)}</div>
+        <div class="si-sub">元/月 · 核心</div>
       </div>
       <!-- 第4行：净资产 / 目标金额 -->
       <div class="summary-item si-highlight">
@@ -2066,17 +2066,14 @@ function calcPlan(silent) {
           <div class="si-gap-info">
             <span style="font-size:12px;color:var(--text2);font-weight:600">预计达标时间</span>
             <span class="si-gap-main" style="${canNow ? 'color:var(--green)' : ''}">${timeText}</span>
-            <span class="si-gap-hint" style="color:var(--text3)">${timeSub}</span>
+            <span class="si-gap-hint" style="color:var(--text3)">${timeSub}${np > 0 ? ` · 含补偿${fmt(np)}` : ''}</span>
           </div>
         </div>
       </div>
     </div>`;
 
-  // Metrics - 只保留补充信息(核心数据已在上方卡片中展示)
-  document.getElementById('cards0').innerHTML = `
-    <div class="metric"><div class="ml">离职补偿(N+1)</div><div class="mv">${np > 0 ? fmt(np) + '元' : '无'}</div><div class="ms">可计入可用资金</div></div>
-    <div class="metric"><div class="ml">月净结余</div><div class="mv" style="color:${save >= 0 ? 'var(--green)' : 'var(--red)'}">${save >= 0 ? '+' : ''}${fmt(save)}元</div><div class="ms">月薪-全部支出</div></div>
-  `;
+  // Metrics 区域不再需要 - 所有核心数据已在上方 summary 卡片中完整展示
+  document.getElementById('cards0').style.display = 'none';
 
   // Breakdown with donut
   const bdItems = Object.keys(grps0).map(g => ({ icon: grps0[g], label: grpNames0[g], val: grpTotals[g] })).filter(x => x.val > 0);
