@@ -143,14 +143,16 @@
     font-size: 14px; color: var(--text); flex: 1; min-width: 0;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     padding: 12px 0; font-weight: 450;
+    display: flex; align-items: center; line-height: 1; min-height: 38px;
   }
-  .field-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .field-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; min-height: 38px; }
   .field input[type=number] {
     width: 100px; text-align: right; border: 2px solid transparent;
     background: var(--card2); border-radius: var(--radius-sm);
     padding: 8px 12px; font-size: 15px; font-weight: 600;
     color: var(--text); outline: none; -webkit-appearance: none;
     min-height: 38px; transition: var(--transition);
+    line-height: normal;
   }
   .field input[type=number]:focus {
     border-color: var(--accent); background: var(--accent-bg);
@@ -167,7 +169,7 @@
     animation: fadeIn 0.2s ease;
   }
   .field-right { position: relative; }
-  .field .unit { font-size: 12px; color: var(--text3); white-space: nowrap; font-weight: 500; }
+  .field .unit { font-size: 12px; color: var(--text3); white-space: nowrap; font-weight: 500; display: flex; align-items: center; line-height: 1; min-height: 16px; }
 
   /* ── Expense groups ── */
   .group-wrap {
@@ -656,9 +658,9 @@
     padding: 12px 16px; border-top: 0.5px solid var(--border);
     background: var(--accent-bg); display: flex; flex-direction: column; gap: 6px;
   }
-  .is-row { display: flex; justify-content: space-between; align-items: center; }
-  .is-label { font-size: 13px; color: var(--text2); font-weight: 500; }
-  .is-val { font-size: 16px; font-weight: 800; color: var(--text); }
+  .is-row { display: flex; justify-content: space-between; align-items: center; min-height: 24px; }
+  .is-label { font-size: 13px; color: var(--text2); font-weight: 500; display:flex; align-items:center; line-height:1; min-height:20px; }
+  .is-val { font-size: 16px; font-weight: 800; color: var(--text); display:flex; align-items:center; line-height:1; min-height:20px; }
   input[type=number]::-webkit-inner-spin-button,
   input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
 
@@ -722,12 +724,12 @@
     .verdict-card { padding: 16px; }
     .verdict-card .vt { font-size: 16px; }
     .verdict-card .vd { font-size: 13px; }
-    .field { flex-wrap: wrap; gap: 4px; }
-    .field label { flex: 1 1 100%; }
-    .field-right { width: 100%; justify-content: flex-end; }
+    .field { flex-wrap: wrap; gap: 4px; min-height: auto; }
+    .field label { flex: 1 1 100%; min-height: auto; padding: 8px 0; }
+    .field-right { width: 100%; justify-content: flex-end; min-height: auto; }
     .exp-mode-toggle { flex-direction: column; }
     .onetime-item { flex-wrap: wrap; }
-    input[type=number] { width: 80px; font-size: 14px; }
+    input[type=number] { width: 80px; font-size: 14px; min-height: 36px; }
   }
   @media (max-width: 360px) {
     .summary-grid { gap: 5px; }
